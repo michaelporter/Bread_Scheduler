@@ -2,133 +2,131 @@ require 'lib/BreadClass.rb'
 
 # Current Assumptions
   # Unlimited Loaf Pans   (Intended)
-	# 20-minute Prep Time before Rise begins (Intended)
-	# All temperature and environment influence on the Rise time. (aka, it is always summertime in the kitchen) (Intended)
+  # 20-minute Prep Time before Rise begins (Intended)
+  # All temperature and environment influence on the Rise time. (aka, it is always summertime in the kitchen) (Intended)
   # 1 oven (Intended)
   # Consolidated oven-time will mark proper scheduling, rather than breads-per-hour (Intended)
 
 class BreadCalc
 
-	attr_accessor :bread_list, :bake_day, :loaf_count, :store_time, :alt_name
+  attr_accessor :bread_list, :bake_day, :loaf_count, :store_time, :alt_name
 
-	def initialize(date, hour, minute, desc = nil)
-		@bake_day = date
-		@start_hour = hour
-		@start_min = minute
+  def initialize(date, hour, minute, desc = nil)
+    @bake_day = date
+    @start_hour = hour
+    @start_min = minute
     @sched_time = Time.local(@bake_day.year, @bake_day.month, @bake_day.day, @start_hour, @start_min, 0)
     @store_time = @sched_time
-
     @alt_name = desc
     if @alt_name != nil
       @alt = ", #{alt_name},"
     end
 
-		@bread_list = []
-		@rise_list = []
-		@bake_list = []
-		@total_list = []
-		@all_groups = []
+    @bread_list = []
+    @rise_list = [] 
+    @bake_list = []
+    @total_list = []
+    @all_groups = []
     @interior1 = []
     @interior2 = []
-		@rise_hash = {}
-		@bake_hash = {}
-		@total_hash = {}
-		@longest_list = {}
+    @rise_hash = {}
+    @bake_hash = {}
+    @total_hash = {}
+    @longest_list = {}
     @all_times = {}
-		@to_delete = nil
-		@longest_rise = nil
-		@first_grouping = nil
-	end
+    @to_delete = nil
+    @longest_rise = nil
+    @first_grouping = nil
+  end
 
-	def get_breads(menu_type = "main")
-	  i = 0
-	  r = 0
+  def get_breads(menu_type = "main")
+    i = 0
+    r = 0
     @loaf_count = 0
     add_or = ""
     add_make = ""
-	  menu = menu_type
+    menu = menu_type
     case menu
       when /edit/i
         add_make = "adding"
         add_or = " added"
       else
         add_make = "making"
-     end
+    end
 
-     bread_count = ask("How many breads will you be #{add_make}?", Integer)
-     sleep(0.1); puts""
+    bread_count = ask("How many breads will you be #{add_make}?", Integer)
+    sleep(0.1); puts""
 
-     while i < bread_count.to_i
-       case r
-	       when 0
-	          puts "What is the name of your first#{add_or} bread?"
-	          r += 1
-	       else 
-	          puts "What is the name of your next bread?"
-        end
+    while i < bread_count.to_i
+      case r
+        when 0
+	  puts "What is the name of your first#{add_or} bread?
+	  r += 1
+	else 
+          puts "What is the name of your next bread?"
+      end
 
       name = ask("", String)
 
       sleep(0.1); puts""
-  		rise = ask("For how long, in minutes, does it rise?", Integer)
+  	rise = ask("For how long, in minutes, does it rise?", Integer)
       sleep(0.1); puts""
-  		bake = ask("For how long does it bake?", Integer)
-  		sleep(0.1); puts""
+  	bake = ask("For how long does it bake?", Integer)
+  	sleep(0.1); puts""
       loaves = ask("And how many loaves do you expect from this recipe?", Integer)
   		
-  		begin
-  		@bread_list.push(Bread.new(name, rise, bake, loaves))
+  	begin
+  	@bread_list.push(Bread.new(name, rise, bake, loaves))
 
-  		rescue SyntaxError => e
-  		  puts "*************EXCEPTION RAISED*************"
-  		  puts "Is your bread's name a number?  That won't work!:"
-  		  puts "#{e}"
-  		  puts "EXITING PROGRAM"
-  		  Process.exit
-  		rescue => e
-  		  puts "*************EXCEPTION RAISED*************"
-  		  puts "Something about this bread's data is incompatible with the current program."
-  		  puts "EXITING PROGRAM"
-  		  Process.exit
-  		end
-  		i+=1
+  	rescue SyntaxError => e
+          puts "*************EXCEPTION RAISED*************"
+  	  puts "Is your bread's name a number?  That won't work!:"
+  	  puts "#{e}"
+ 	  puts "EXITING PROGRAM"
+  	  Process.exit
+  	rescue => e
+  	  puts "*************EXCEPTION RAISED*************"
+ 	  puts "Something about this bread's data is incompatible with the current program."
+  	  puts "EXITING PROGRAM"
+  	  Process.exit
+  	end
+      i+=1
       puts ""; sleep(0.2)
-  		puts "Thanks!"
+      puts "Thanks!"
       puts ""; sleep(0.2)
-	  end
+      end
 	  
-	  count_loaves
-	end
-	
-	def count_loaves
-	  @loaf_count = 0
-	  @bread_list.each do |k|
-	    @loaf_count += k.loaves
-	  end
-	end
+      count_loaves
+  end
+  def count_loaves
+    @loaf_count = 0
+    @bread_list.each do |k|
+      @loaf_count += k.loaves
+    end
+  end
 
-	def run
+  def run
     reset_all_things
     find_longest_list
     interior_scheduling
     publish
   end
     
-    def run_without_text
-      reset_all_things
-      find_longest_list
-      interior_scheduling
-      count_loaves
-    end
+  def run_without_text
+    reset_all_things
+    find_longest_list
+    interior_scheduling
+    count_loaves
+  end
 
-	def publish(alt_giv = nil)             # This gives the final resulting schedule, ordered, as it should be read by 
+  def publish(alt_giv = nil)             # This gives the final resulting schedule, ordered, as it should be read by 
                                          # users.  This is currently the only place where the schedule is completely 
                                          # ordered;
     if alt_giv != nil
       @alt_name = alt_give
     end
-	  @loaf_count = 0
-	  count_loaves
+    @loaf_count = 0
+    count_loaves
 
     alt = ""
 
@@ -137,27 +135,27 @@ class BreadCalc
     else
       alt = ""
     end
-	  puts "\nHere is your baking order for #{@bake_day.strftime("%m/%d/%Y")}#{alt}. \n"
+    puts "\nHere is your baking order for #{@bake_day.strftime("%m/%d/%Y")}#{alt}. \n"
     
     sorted_all_times = @all_times.sort        #[ [date_obj, [str, obj]], [date_obj2, [str2, obj2]], etc ]
 
-	  sorted_all_times.each do |k|
-	  	obj_part = k[1]
-	  	puts "#{k[0].strftime("%I:%M %p")} -- #{obj_part[0]}"
+    sorted_all_times.each do |k|
+      obj_part = k[1]
+      puts "#{k[0].strftime("%I:%M %p")} -- #{obj_part[0]}"
       if sorted_all_times[sorted_all_times.index(k)+1]
         dot_count(k[0], sorted_all_times[sorted_all_times.index(k)+1][0])
       end
       sleep(0.05)
-	  end
+    end
 	  
-	  if @loaf_count == 1
-		loaf = "loaf"
-	  else
-		loaf = "loaves"
-	  end
-		puts ""
-	  puts "For a total of #{@loaf_count} #{loaf}!"
-	end
+    if @loaf_count == 1
+      loaf = "loaf"
+    else
+      loaf = "loaves"
+    end
+    puts ""
+    puts "For a total of #{@loaf_count} #{loaf}!"
+  end
 
 
   private 
@@ -297,11 +295,11 @@ class BreadCalc
         end
       else
         unless @interior_time >= @longest_rise.rise || reverse_tot.empty?
-        	unless @interior1.include?(reverse_tot[0][1])
-        	  @interior1.push(reverse_tot[0][1])
-        	end
-        	@interior_time += reverse_tot[0][1].bake
-        	reverse_tot.delete_at(0)
+          unless @interior1.include?(reverse_tot[0][1])
+            @interior1.push(reverse_tot[0][1])
+          end
+          @interior_time += reverse_tot[0][1].bake
+          reverse_tot.delete_at(0)
         end
       end
     end
