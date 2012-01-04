@@ -238,8 +238,6 @@ class BreadCalc
 
     @interior1 = Array.new
     @interior2 = Array.new
-    reset(@interior1_sorted)
-    reset(@interior2_sorted)
 
     reset(@all_times)
     @final_sched = Array.new
@@ -317,8 +315,6 @@ class BreadCalc
                                 # time of @long_interior, so they bake when that one finishes, and so on.  This last 
                                 # part of the process process repeats for each bread in @interior2, except instead of 
                                 # @long_interior as the base, it is @longest_rise;
-    @interior1_sorted = []
-    @interior2_sorted = []
     @interior1 = @interior1.sort.reverse  #Currently sorting for total.
 
     @longest_rise.start_at = @sched_time
@@ -335,8 +331,7 @@ class BreadCalc
       @long_interior.done_at = @sched_time + in_seconds(:min, @long_interior.total)
 
       @sched_time += in_seconds(:min, @long_interior.total)
-  
-      @interior1_sorted.push(@long_interior)
+
       @interior1.delete_at(0)
 
       @interior1.each do |k|
