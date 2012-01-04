@@ -9,7 +9,7 @@ require 'lib/BreadClass.rb'
 
 class BreadCalc
 
-	attr_accessor :bread_list, :order, :longest_list, :total_hash_sorted, :bake_day, :new_name, :loaf_count, :store_time, :alt_name
+	attr_accessor :bread_list, :bake_day, :loaf_count, :store_time, :alt_name
 
 	def initialize(date, hour, minute, desc = nil)
 		@bake_day = date
