@@ -1,0 +1,7 @@
+This is my first long project: a scheduling utility directed at maximizing the efficiency of one's baking days based on a few assumptions.  While, as a self-taught novice, I hesitate to call myself a developer, I nevertheless want to share it as an example of my work for possessing several qualities I’ve come to value.  Namely, 
+
+1. It is inherently practical. I began this project to address a need of my own as a baker, as well as to provide a working platform for diving deeper into the elegant power of Ruby.
+2. It has capacity for growth; while satisfying a simple goal now, I’ve built it knowing that I’ll want it to grow with my needs, and to be useful in various forms, such as I first intended it to eventually become: a Rails application.
+3. It has already evolved over time; more implicit than visible, this has provided a great arena for honing my approach to algorithms and to defining functionality in Ruby in general.  
+
+Ultimately, I share this as an expression of my drive to push continually towards the boundaries of my knowledge while producing something useful and, to that end, increasingly valuable.
