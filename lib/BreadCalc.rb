@@ -1,15 +1,13 @@
 require 'lib/BreadClass.rb'
 
 # Current Assumptions
-  # Unlimited Loaf Pans   (Intended)
-  # 20-minute Prep Time before Rise begins (Intended)
-  # All temperature and environment influence on the Rise time. (aka, it is always summertime in the kitchen) (Intended)
-  # 1 oven (Intended)
-  # Consolidated oven-time will mark proper scheduling, rather than breads-per-hour (Intended)
+  # Unlimited Loaf Pans
+  # 20-minute Prep Time before Rise begins
+  # All temperature and environment influence on the Rise time. (aka, it is always summertime in the kitchen)
+  # 1 oven
+  # Consolidated oven-time will mark proper scheduling, rather than breads-per-hour
 
 class BreadCalc
-
-  # Let's see what happens when I try to push this!
 
   attr_accessor :bread_list, :bake_day, :loaf_count, :store_time, :alt_name
 
@@ -62,7 +60,7 @@ class BreadCalc
     while i < bread_count.to_i
       case r
         when 0
-	  puts "What is the name of your first#{add_or} bread?
+	  puts "What is the name of your first#{add_or} bread?"
 	  r += 1
 	else 
           puts "What is the name of your next bread?"
