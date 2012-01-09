@@ -41,7 +41,7 @@ class BreadMenus
       choose do |e|
         e.prompt = "What would you like to do?"
         e.choice(:"Change Day Name" ) {wrapper{change_times}}   
-        e.choice(:"List Schedule" ) {wrapper{@day_obj.publish}}  
+        e.choice(:"View Schedule" ) {wrapper{@day_obj.publish}}  
         e.choice(:"Add a Bread") {wrapper{@breads.add_bread(@which_day)}}
         e.choice(:"Delete a Bread" ) {wrapper{delete_menu(@which_day)}}
         e.choice(:"Edit a Bread's Info" ) {wrapper{bread_menu}}
