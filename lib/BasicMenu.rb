@@ -21,7 +21,7 @@ class BreadMenus
       choose do |m|
         m.prompt = "What would you like to do?"
         m.choice(:"New Baking Day" ) {wrapper{@breads.new_day}}
-        m.choice(:"List All Current Days" ) {wrapper{@breads.publish_lists}}
+        m.choice(:"Show All Current Schedules" ) {wrapper{@breads.publish_lists}}
         m.choice(:"Select a Day to View" ) {wrapper{which_list}}
         m.choice(:"Delete A Day" ) {wrapper{day_menu; @breads.delete_day(@which_day)}}
         m.choice(:"Edit a Day" ) {wrapper{edit_menu(check_for_day)}}
