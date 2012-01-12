@@ -1,9 +1,9 @@
 #!/usr/bin/ruby
 
 require 'lib/BasicMenu.rb'
-require 'rubygems'
 gem 'highline', '= 1.5.0'
 require 'highline/import'
+
 
 puts %Q{
 

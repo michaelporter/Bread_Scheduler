@@ -18,10 +18,6 @@ class BreadCalc
     @sched_time = Time.local(@bake_day.year, @bake_day.month, @bake_day.day, @start_hour, @start_min, 0)
     @store_time = @sched_time
     @alt_name = desc
-    if @alt_name != nil
-      @alt = ", #{alt_name},"
-    end
-
     @bread_list = []
     @rise_list = [] 
     @bake_list = []
@@ -119,17 +115,13 @@ class BreadCalc
     count_loaves
   end
 
-  def publish(alt_giv = nil)             # This gives the final resulting schedule, ordered, as it should be read by 
-                                         # users.  This is currently the only place where the schedule is completely 
-                                         # ordered;
-    if alt_giv != nil
-      @alt_name = alt_give
-    end
+  def publish   # This gives the final resulting schedule, ordered, as it should be read by 
+                # users.  This is currently the only place where the schedule is completely 
+                # ordered;
     @loaf_count = 0
     count_loaves
 
     alt = ""
-
     if @alt_name != false && @alt_name != nil
       alt = "--#{@alt_name}"
     else
@@ -137,7 +129,7 @@ class BreadCalc
     end
     puts "\nHere is your baking order for #{@bake_day.strftime("%m/%d/%Y")}#{alt}. \n"
     
-    sorted_all_times = @all_times.sort        #[ [date_obj, [str, obj]], [date_obj2, [str2, obj2]], etc ]
+    sorted_all_times = @all_times.sort    #[ [date_obj, [str, obj]], [date_obj2, [str2, obj2]], etc ]
 
     sorted_all_times.each do |k|
       obj_part = k[1]
@@ -313,7 +305,7 @@ class BreadCalc
                                 # which is set then to begin just after the longest-rising bread.  The remaining breads
                                 # within @interior1 get their start time by subtracting their rise time from the end 
                                 # time of @long_interior, so they bake when that one finishes, and so on.  This last 
-                                # part of the process process repeats for each bread in @interior2, except instead of 
+                                # part of the process repeats for each bread in @interior2, except instead of 
                                 # @long_interior as the base, it is @longest_rise;
     @interior1 = @interior1.sort.reverse  #Currently sorting for total.
 
@@ -355,7 +347,7 @@ class BreadCalc
     end
   end
   
-  def order_breads            # Places the timed, unchecked breads into this collection, ordered roughly by start time
+  def order_breads               # Places the timed, unchecked breads into this collection, ordered roughly by start time
     @final_sched = []
  
     @final_sched.push(@longest_rise)
@@ -381,7 +373,7 @@ class BreadCalc
         @final_sched.delete(k)
         next
       end
-      k.check_against_times(@all_times, [k.start_at, k.bake_at, k.done_at], @all_times) {@all_times[k.start_at]=["Start #{k.name}", k]; @all_times[k.bake_at]=["Put #{k.name} into the oven", k]; @all_times[k.done_at]=["Take #{k.name} out of the oven", k]}
+      k.check_against_times(@all_times, [k.start_at, k.bake_at, k.done_at]) {@all_times[k.start_at]=["Start #{k.name}", k]; @all_times[k.bake_at]=["Put #{k.name} into the oven", k]; @all_times[k.done_at]=["Take #{k.name} out of the oven", k]}
     end
   end 
   
