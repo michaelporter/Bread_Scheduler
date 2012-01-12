@@ -41,23 +41,15 @@ class DayCollector < Hash
       sleep(0.05); puts ""
     end
 
-    time_input = time_input.split(":")
-    time_hr = time_input[0].to_i
-    time_min = time_input[1].to_i
-    self[date_input] = BreadCalc.new(date_input, time_hr, time_min, alt_name) 
+    time_hr, time_min = parse_times(time_input)
+    new_day = BreadCalc.new(date_input, time_hr, time_min, alt_name) 
 
-    self[date_input].get_breads
-
-    self[date_input].run
-    day = self[date_input].store_time.strftime("%D")
-    self[day] = self[date_input]
-    self.delete(date_input)
+    manage_new_day(date_input, new_day)
 
     puts "Thank you, and good luck!"
   end
 
   def delete_day(which_day)
-    # Deletes from the BreadCollector instance
     if self.has_key?(which_day)
       if self[which_day].alt_name != nil && self[which_day].alt_name != false
         alt_name = ", #{self[which_day].alt_name}, "
@@ -147,7 +139,7 @@ class DayCollector < Hash
     puts "\n\n\n\n\n\n"
   end
   
-  def change_date_and_time(which_day)             # Largely copies the new_day method with some alterations;
+  def change_date_and_time(which_day) 
     old_obj = which_day
     alt_name = nil
     alt_give = nil
@@ -159,8 +151,6 @@ class DayCollector < Hash
       time_input = ask("What time will you start?  Please enter in 24-hour format (hour:minute)", String) {|q| q.validate = /(([1]?[0-9]{1})|([2][0-4]{1})):([1-6]?[0-9]{1})/}
       sleep(0.05); puts ""
 
-      #puts "You entered #{date_input.strftime("%m/%d/%Y")} and #{time_input}"
-      #sleep(0.05); puts ""
     
       if self[old_obj].alt_name != nil && self[old_obj].alt_name != false
         old_alt = ", #{self[old_obj].alt_name},"
@@ -184,21 +174,10 @@ class DayCollector < Hash
       sleep(0.05); puts ""
     end
     
-    time_input = time_input.split(":")
-    time_hr = time_input[0].to_i
-    time_min = time_input[1].to_i 
+    time_hr, time_min = parse_times(time_input)
+    new_day = BreadCalc.new(date_input, time_hr, time_min, alt_name) 
 
-    self[date_input] = BreadCalc.new(date_input, time_hr, time_min, alt_text)
-
-    self[date_input].bread_list = self[old_obj].bread_list
-
-    self[date_input].run
-    day = self[date_input].store_time.strftime("%D")
-    old_time = self[old_obj].store_time.strftime("%D")
-    self[day] = self[date_input]
-
-    self.delete(old_obj)
-    self.delete(date_input)
+    day = manage_new_day(date_input, new_day)
 
     if alt_name != nil && alt_name != false then alt_name = ", #{alt_name}"
     else alt_name = ""
