@@ -186,4 +186,11 @@ class DayCollector < Hash
 
     return day
   end
+  
+  def parse_times(input)
+    input = input.split(":")
+    hr = input[0].to_i
+    min = input[1].to_i
+    return hr, min
+  end
 end
