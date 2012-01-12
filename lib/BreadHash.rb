@@ -12,13 +12,13 @@ class DayCollector < Hash
   def initialize
   end
 
-  def new_day                  # Gathers particular data for a new baking day; creates it, launches the day's calc 
+  def new_day # Gathers particular data for a new baking day; creates it, launches the day's calc
                                # methods;
     check = false
     until check == true
       date_input = ask("What day will you be baking? (Please enter 'MM/DD/YYYY')", Date) {|q| q.validate = /(([0-1]?[0-9]{1})|([2][0-4]?))\/(([0-2]?[0-9]{1})|([3][0-1]))\/([0-9]{4})/}
       sleep(0.05); puts ""
-      time_input = ask("What time will you start?  Please enter in 24-hour format (hour:minute)", String) {|q| q.validate = /(([1]?[0-9]{1})|([2][0-4]{1})):([1-6]?[0-9]{1})/}
+      time_input = ask("What time will you start? Please enter in 24-hour format (hour:minute)", String) {|q| q.validate = /(([1]?[0-9]{1})|([2][0-4]{1})):([1-6]?[0-9]{1})/}
       sleep(0.05); puts ""
 
       alt_name = agree("Would you like to give this baking day a short description? (YES/NO)")
@@ -35,13 +35,14 @@ class DayCollector < Hash
         alt_text = ""
       end
 
+
       puts "** You entered #{date_input.strftime("%m/%d/%Y")}, at #{time_input}#{alt_text}. **\n\n"
       check = agree("Is this correct? (YES/NO)")
       sleep(0.05); puts ""
     end
 
     time_hr, time_min = parse_times(time_input)
-    new_day = BreadCalc.new(date_input, time_hr, time_min, alt_name) 
+    new_day = BreadCalc.new(date_input, time_hr, time_min, alt_name)
 
     manage_new_day(date_input, new_day)
 
@@ -73,7 +74,7 @@ class DayCollector < Hash
 
     if self[which_day].bread_list.empty?
       self.delete(which_day)
-      puts "That was the last bread for this day.  The baking day has been deleted."
+      puts "That was the last bread for this day. The baking day has been deleted."
     else
       self[which_day].run
     end
@@ -85,7 +86,7 @@ class DayCollector < Hash
     puts "Thank you, and good luck!"
   end
   
-  def edit_bread(which_day, the_bread, the_data)               # Allows already-processed breads to be edited;
+  def edit_bread(which_day, the_bread, the_data) # Allows already-processed breads to be edited;
                                                                # The schedules are updated accordingly;
     new_data = ask("What is the new value?")
     bread_obj = the_bread
@@ -133,23 +134,24 @@ class DayCollector < Hash
     puts "BREADS FOR:"
     puts "#{self[which_day].bake_day.strftime("%m/%d/%Y")}#{alt}"
     self[which_day].bread_list.each do |k|
-      puts "#{i+=1}.  #{k.name}."
+      puts "#{i+=1}. #{k.name}."
     end
     puts "\n\n\n\n\n\n"
   end
   
-  def change_date_and_time(which_day)             # Largely copies the new_day method with some alterations;
+  def change_date_and_time(which_day)
     old_obj = which_day
     old_time = self[old_obj].store_time.strftime("%D")
     alt_name = nil
     alt_give = nil
     check = false
-    until check == true 
+    until check == true
       date_input = ask("What is the new date? (Please enter 'MM/DD/YYYY')", Date) {|q| q.validate = /(([0-1]?[0-9]{1})|([2][0-4]?))\/(([0-2]?[0-9]{1})|([3][0-1]))\/([0-9]{4})/}
       sleep(0.05); puts ""
 
-      time_input = ask("What time will you start?  Please enter in 24-hour format (hour:minute)", String) {|q| q.validate = /(([1]?[0-9]{1})|([2][0-4]{1})):([1-6]?[0-9]{1})/}
+      time_input = ask("What time will you start? Please enter in 24-hour format (hour:minute)", String) {|q| q.validate = /(([1]?[0-9]{1})|([2][0-4]{1})):([1-6]?[0-9]{1})/}
       sleep(0.05); puts ""
+
     
       if self[old_obj].alt_name != nil && self[old_obj].alt_name != false
         old_alt = ", #{self[old_obj].alt_name},"
@@ -162,11 +164,12 @@ class DayCollector < Hash
 
       if alt_give == true
         alt_text = ask("What is the new description?", String)
+        alt_text = "--#{alt_text}"
       elsif alt_give == false && self[old_obj].alt_name == nil && self[old_obj].alt_name == false
         alt_text = ""
       elsif alt_give == false && self[old_obj].alt_name != nil && self[old_obj].alt_name != false
-        alt_text = self[old_name].alt_name
-      end 
+        alt_text = "--#{self[old_obj].alt_name}"
+      end
 
       puts "** You entered #{date_input.strftime("%m/%d/%Y")}, at #{time_input}#{alt_text}. **\n\n"
       check = agree("Is this correct?")
@@ -174,7 +177,8 @@ class DayCollector < Hash
     end
     
     time_hr, time_min = parse_times(time_input)
-    new_day = BreadCalc.new(date_input, time_hr, time_min, alt_text)
+    new_day = BreadCalc.new(date_input, time_hr, time_min, alt_name)
+
     day = manage_new_day(date_input, new_day, old_obj)
 
     if alt_name != nil && alt_name != false then alt_name = ", #{alt_name}"
@@ -201,7 +205,7 @@ class DayCollector < Hash
     end
     return day
   end
-
+  
   def parse_times(input)
     input = input.split(":")
     hr = input[0].to_i

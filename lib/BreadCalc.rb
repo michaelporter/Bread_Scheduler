@@ -19,7 +19,7 @@ class BreadCalc
     @store_time = @sched_time
     @alt_name = desc
     @bread_list = []
-    @rise_list = [] 
+    @rise_list = []
     @bake_list = []
     @total_list = []
     @all_groups = []
@@ -56,42 +56,42 @@ class BreadCalc
     while i < bread_count.to_i
       case r
         when 0
-	  puts "What is the name of your first#{add_or} bread?"
-	  r += 1
-	else 
+puts "What is the name of your first#{add_or} bread?"
+r += 1
+else
           puts "What is the name of your next bread?"
       end
 
       name = ask("", String)
 
       sleep(0.1); puts""
-  	rise = ask("For how long, in minutes, does it rise?", Integer)
+   rise = ask("For how long, in minutes, does it rise?", Integer)
       sleep(0.1); puts""
-  	bake = ask("For how long does it bake?", Integer)
-  	sleep(0.1); puts""
+   bake = ask("For how long does it bake?", Integer)
+   sleep(0.1); puts""
       loaves = ask("And how many loaves do you expect from this recipe?", Integer)
-  		
-  	begin
-  	@bread_list.push(Bread.new(name, rise, bake, loaves))
+  
+   begin
+   @bread_list.push(Bread.new(name, rise, bake, loaves))
 
-  	rescue SyntaxError => e
+   rescue SyntaxError => e
           puts "*************EXCEPTION RAISED*************"
-  	  puts "Is your bread's name a number?  That won't work!:"
-  	  puts "#{e}"
- 	  puts "EXITING PROGRAM"
-  	  Process.exit
-  	rescue => e
-  	  puts "*************EXCEPTION RAISED*************"
- 	  puts "Something about this bread's data is incompatible with the current program."
-  	  puts "EXITING PROGRAM"
-  	  Process.exit
-  	end
+   puts "Is your bread's name a number? That won't work!:"
+   puts "#{e}"
+  puts "EXITING PROGRAM"
+   Process.exit
+   rescue => e
+   puts "*************EXCEPTION RAISED*************"
+  puts "Something about this bread's data is incompatible with the current program."
+   puts "EXITING PROGRAM"
+   Process.exit
+   end
       i+=1
       puts ""; sleep(0.2)
       puts "Thanks!"
       puts ""; sleep(0.2)
       end
-	  
+
       count_loaves
   end
   def count_loaves
@@ -115,13 +115,14 @@ class BreadCalc
     count_loaves
   end
 
-  def publish   # This gives the final resulting schedule, ordered, as it should be read by 
-                # users.  This is currently the only place where the schedule is completely 
-                # ordered;
+  def publish # This gives the final resulting schedule, ordered, as it should be read by
+                                         # users. This is currently the only place where the schedule is completely
+                                         # ordered;
     @loaf_count = 0
     count_loaves
 
     alt = ""
+
     if @alt_name != false && @alt_name != nil
       alt = "--#{@alt_name}"
     else
@@ -129,7 +130,7 @@ class BreadCalc
     end
     puts "\nHere is your baking order for #{@bake_day.strftime("%m/%d/%Y")}#{alt}. \n"
     
-    sorted_all_times = @all_times.sort    #[ [date_obj, [str, obj]], [date_obj2, [str2, obj2]], etc ]
+    sorted_all_times = @all_times.sort #[ [date_obj, [str, obj]], [date_obj2, [str2, obj2]], etc ]
 
     sorted_all_times.each do |k|
       obj_part = k[1]
@@ -139,7 +140,7 @@ class BreadCalc
       end
       sleep(0.05)
     end
-	  
+
     if @loaf_count == 1
       loaf = "loaf"
     else
@@ -150,7 +151,7 @@ class BreadCalc
   end
 
 
-  private 
+  private
   
   def find_longest_list
     find_longest_rise
@@ -162,12 +163,12 @@ class BreadCalc
     @bread_list.each do |k|
       if @rise_hash.has_key?(k.rise) then k.rise += 1
       end
-      @rise_hash[k.rise] = k  # { rise =>obj, rise2 => obj2, etc...}
+      @rise_hash[k.rise] = k # { rise =>obj, rise2 => obj2, etc...}
     end
     @longest_rise = @rise_hash.sort[@rise_hash.sort.length-1][1]
     @to_delete = @longest_rise
     @rise_hash.delete(@rise_hash.index(@to_delete))
-  end 
+  end
   
   def find_longest_bake
     @bread_list.each do |k|
@@ -245,7 +246,7 @@ class BreadCalc
     @sched_time = Time.local(@bake_day.year, @bake_day.month, @bake_day.day, @start_hour, @start_min, 0)
   end
 
-  def dot_count(current, next_one)        # Places one dot per line for every span of 35 minutes between 
+  def dot_count(current, next_one) # Places one dot per line for every span of 35 minutes between
                                           # two scheduled actions;
     diff = next_one - current
     count = (diff/in_seconds(:min, 35)).to_i
@@ -260,10 +261,10 @@ class BreadCalc
     final_ordering
   end
   
-  def make_interiors   # Gathers the breads whose total time together fits in the longest ones' rise times;
+  def make_interiors # Gathers the breads whose total time together fits in the longest ones' rise times;
                        # It first gathers the breads that fit within the time of the longest of all into @interior1;
                        # the remaining breads are gathered into @interior2;
-    reverse_tot = @tot_sort.reverse 
+    reverse_tot = @tot_sort.reverse
     #[[tot, obj], [tot2, obj2], etc ]
 
     @interior_time = 0
@@ -275,13 +276,13 @@ class BreadCalc
       if reverse_tot.length > 1
         reverse_tot.each do |k|
           unless @interior_time >= @longest_rise.rise || reverse_tot.empty?
-            if @interior1.include?(k[1])   
+            if @interior1.include?(k[1])
               next
             end
             @interior1.push(k[1])
             @interior_time += k[1].bake
             reverse_tot.delete(k)
-          end   
+          end
         end
       else
         unless @interior_time >= @longest_rise.rise || reverse_tot.empty?
@@ -294,20 +295,20 @@ class BreadCalc
       end
     end
     if !reverse_tot.empty?
-    	reverse_tot.each do |k|
-    	  @interior2.push(k[1]) unless @interior1.include?(k[1])
-    	end
+     reverse_tot.each do |k|
+     @interior2.push(k[1]) unless @interior1.include?(k[1])
+     end
     end
   end
   
-  def time_interiors            # Assigns times to each bread's starting, baking, and finishing, according to their 
-                                # order from the start time.  @interior1 searches for a longest bread within itself,
-                                # which is set then to begin just after the longest-rising bread.  The remaining breads
-                                # within @interior1 get their start time by subtracting their rise time from the end 
-                                # time of @long_interior, so they bake when that one finishes, and so on.  This last 
-                                # part of the process repeats for each bread in @interior2, except instead of 
+  def time_interiors # Assigns times to each bread's starting, baking, and finishing, according to their
+                                # order from the start time. @interior1 searches for a longest bread within itself,
+                                # which is set then to begin just after the longest-rising bread. The remaining breads
+                                # within @interior1 get their start time by subtracting their rise time from the end
+                                # time of @long_interior, so they bake when that one finishes, and so on. This last
+                                # part of the process process repeats for each bread in @interior2, except instead of
                                 # @long_interior as the base, it is @longest_rise;
-    @interior1 = @interior1.sort.reverse  #Currently sorting for total.
+    @interior1 = @interior1.sort.reverse #Currently sorting for total.
 
     @longest_rise.start_at = @sched_time
     @longest_rise.bake_at = @sched_time + in_seconds(:min, (@longest_rise.rise))
@@ -339,34 +340,34 @@ class BreadCalc
       starting = @longest_rise.done_at
 
       @interior2.each do |k|
-        k.start_at = starting - in_seconds(:min, (k.rise))  # 20 to account for prep time before rise
-        k.bake_at = starting + in_seconds(:min, 2)             # 2 to account for time to switch pans in oven
+        k.start_at = starting - in_seconds(:min, (k.rise)) # 20 to account for prep time before rise
+        k.bake_at = starting + in_seconds(:min, 2) # 2 to account for time to switch pans in oven
         starting += in_seconds(:min, (k.bake+2))
         k.done_at = starting
       end
     end
   end
   
-  def order_breads               # Places the timed, unchecked breads into this collection, ordered roughly by start time
+  def order_breads # Places the timed, unchecked breads into this collection, ordered roughly by start time
     @final_sched = []
  
     @final_sched.push(@longest_rise)
     @final_sched.push(@long_interior) unless @long_interior == ""
 
     @interior1.each do |k|
-    	@final_sched.push(k)
+     @final_sched.push(k)
     end
     
     if !@interior2.empty?
-    	@interior2.each do |v|
-    	  @final_sched.push(v)
-    	end
+     @interior2.each do |v|
+     @final_sched.push(v)
+     end
     end
   end
   
-  def final_ordering             # Checks the breads' times against those of other breads, and adjusts the current
-                                 # bread's times accordingly.  20 minutes is the standard time for change, to account
-                                 # for the typical prep time for each bread.  Other values are variable, depending on
+  def final_ordering # Checks the breads' times against those of other breads, and adjusts the current
+                                 # bread's times accordingly. 20 minutes is the standard time for change, to account
+                                 # for the typical prep time for each bread. Other values are variable, depending on
                                  # the bread's relation in time to previously-scheduled breads.
     @final_sched.each do |k|
       if k == nil || k == false
@@ -375,7 +376,7 @@ class BreadCalc
       end
       k.check_against_times(@all_times, [k.start_at, k.bake_at, k.done_at]) {@all_times[k.start_at]=["Start #{k.name}", k]; @all_times[k.bake_at]=["Put #{k.name} into the oven", k]; @all_times[k.done_at]=["Take #{k.name} out of the oven", k]}
     end
-  end 
+  end
   
   def in_seconds(type, number)
      case type

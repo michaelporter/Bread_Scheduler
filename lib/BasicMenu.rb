@@ -15,7 +15,7 @@ class BreadMenus
     @menu = :main
     loop do
     puts "\n\n\n\n\n\n\n\n-----------------*********-----------------\n\n"
-    puts "                 MAIN MENU                 \n\n"
+    puts " MAIN MENU \n\n"
     puts "-----------------*********-----------------\n\n\n\n"
     
       choose do |m|
@@ -34,14 +34,14 @@ class BreadMenus
     @menu = :edit
     loop do
       puts "\n\n\n\n\n-----------------*********-----------------"
-      puts "       You are editing for #{@which_day}       "
+      puts " You are editing for #{@which_day} "
       puts "-----------------*********-----------------\n\n"
-      puts "                 EDIT MENU                 \n\n"
+      puts " EDIT MENU \n\n"
       puts "-----------------*********-----------------\n\n\n\n"
       choose do |e|
         e.prompt = "What would you like to do?"
-        e.choice(:"Change Day Name" ) {wrapper{change_times}}   
-        e.choice(:"View Schedule" ) {wrapper{@day_obj.publish}}  
+        e.choice(:"Change Day Name" ) {wrapper{change_times}}
+        e.choice(:"View Schedule" ) {wrapper{@day_obj.publish}}
         e.choice(:"Add a Bread") {wrapper{@breads.add_bread(@which_day)}}
         e.choice(:"Delete a Bread" ) {wrapper{delete_menu(@which_day)}}
         e.choice(:"Edit a Bread's Info" ) {wrapper{bread_menu}}
@@ -54,11 +54,11 @@ class BreadMenus
     @menu = :delete
     loop do
       puts "\n\n\n\n\n\n\n\n\n\n\n-----------------*********-----------------\n\n"
-      puts "              BREAD-DELETE MENU               \n\n"
+      puts " BREAD-DELETE MENU \n\n"
       puts "-----------------*********-----------------\n\n\n\n\n\n\n\n\n\n"
       sleep(0.8)
       @day_obj.publish
-      puts "\n\n-----------------*********-----------------\n\n"  
+      puts "\n\n-----------------*********-----------------\n\n"
       sleep(1)
       
       choose do |b|
@@ -75,7 +75,7 @@ class BreadMenus
     @menu = :bread
     loop do
       puts "\n\n\n\n\n\n\n\n\n\n-----------------*********-----------------\n\n"
-      puts "                BREADS MENU                \n\n"
+      puts " BREADS MENU \n\n"
       puts "-----------------*********-----------------\n\n\n\n\n\n\n\n\n\n"
       sleep(0.8)
       @day_obj.bread_list.each do |k|
@@ -93,7 +93,7 @@ class BreadMenus
         end
         p.choice(:"Return to Edit Menu") {wrapper{edit_menu(@which_day)}}
       end
-    end 
+    end
   end
   
   def data_menu(bread_choice)
@@ -101,7 +101,7 @@ class BreadMenus
     bread = bread_choice
     loop do
       puts "\n\n\n\n\n\n\n\n\n\n-----------------*********-----------------\n\n"
-      puts "             DATA EDITING MENU             \n\n"
+      puts " DATA EDITING MENU \n\n"
       puts "-----------------*********-----------------\n\n\n\n\n\n\n\n\n\n"
       sleep(0.7)
       bread.publish_data
@@ -120,9 +120,9 @@ class BreadMenus
     end
   end
 
-  def day_menu          # For returning a BreadCalc object value for a chosen day to the edit menu;    
+  def day_menu # For returning a BreadCalc object value for a chosen day to the edit menu;
       puts "\n\n\n\n\n\n\n\n\n\n\n\n-----------------*********-----------------\n\n"
-      puts "                 DAYS MENU                 \n\n"
+      puts " DAYS MENU \n\n"
       puts "-----------------*********-----------------\n\n\n\n"
       choose do |s|
         s.prompt = "Please choose a schedule."
@@ -134,7 +134,7 @@ class BreadMenus
     @which_day
   end
 
-  def wrapper                       # Provides automatic option to return to the previous menu, or the most
+  def wrapper # Provides automatic option to return to the previous menu, or the most
                                     # sensible one following any major action;
     yield if block_given?
     
@@ -150,7 +150,7 @@ class BreadMenus
 
     sleep(0.5)
 
-    an = agree("Return to #{which}menu?")    #by default continues on with loop if answer is positive;
+    an = agree("Return to #{which}menu?") #by default continues on with loop if answer is positive;
     
     if an == false && @menu == :main
       say "Good-bye, and thank you!"
@@ -195,7 +195,7 @@ class BreadMenus
     end
   end
     
-  def check_for_day                       # Manages access to single baking days for editing;
+  def check_for_day # Manages access to single baking days for editing;
     if @breads.length == 1
       @which_day = @breads.keys[0]
       @day_obj = @breads[@breads.keys[0]]
