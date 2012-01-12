@@ -102,10 +102,6 @@ class Bread
         elsif !check_oven(check, dest) && check_starts(check, dest)
           count = 0
           while check_starts(check, dest)
-            puts "checking start for #{check}, #{l}"
-            ap check
-            puts "inc"
-            ap inc
             count += inc
             check.start_at += count
             check.bake_at += count
