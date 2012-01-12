@@ -37,13 +37,12 @@ class Bread
     end
   end
 
-  def check_against_times(in_hash, val_array, dest_col)# Runs recursively through the existing values in the hash
+  def check_against_times(dest, val_array)# Runs recursively through the existing values in the hash
                                                        # checking for both the value and the bread's name in 
                                                        # association to avoid overwriting and repeats; also
                                                        # checks for oven occupancy, assuming only 1 oven.
     all_vals = []
     check = self
-    dest = dest_col
 
     if val_array.is_a? Array
       all_vals = val_array
@@ -52,11 +51,11 @@ class Bread
     end
                                                   
     all_vals.each do |l|
-      if (in_hash.has_key?(l) && !in_hash[l].include?(check)) || check_oven(check, dest) || check_starts(check, dest)
+      if (dest.has_key?(l) && !dest[l].include?(check)) || check_oven(check, dest) || check_starts(check, dest)
         saver = l
         count = 0
         inc = case
-          when (l == check.bake_at && check_oven(check, dest)) #|| (l != check.bake_at && !(in_hash.has_key?(l) && !in_hash[l].include?(check)))
+          when (l == check.bake_at && check_oven(check, dest))
             if @conflict.bake_at < check.bake_at && check.bake_at < @conflict.done_at
               diff = check.bake_at.to_i - @conflict.bake_at.to_i
               if diff == 0
@@ -82,51 +81,49 @@ class Bread
         if l == check.bake_at && check_oven(check, dest)
           puts "inside the if"
           count = 0
-          while in_hash.has_key?((l + count)) || (check_oven(check, dest)) || check_starts(check, dest)
+          while dest.has_key?((l + count)) || (check_oven(check, dest)) || check_starts(check, dest)
             count += inc
-            check.start_at += count
-            check.bake_at += count
-            check.done_at += count
-            inc = in_seconds(:min, 2) # allows inc to be set higher for the first estimate , 
-                                      # but shrinks so as not to overshoot.
+            add_count(check, count, inc)
           end
-        elsif l != check.bake_at && !(in_hash.has_key?(l) && !in_hash[l].include?(check)) && check_oven(check, dest)
+        elsif l != check.bake_at && !(dest.has_key?(l) && !dest[l].include?(check)) && check_oven(check, dest)
           count = 0
           while check_oven(check, dest)
             count += inc
-            check.start_at += count
-            check.bake_at += count
-            check.done_at += count
-            inc = in_seconds(:min, 2)
+            add_count(check, count, inc)
           end
         elsif !check_oven(check, dest) && check_starts(check, dest)
           count = 0
           while check_starts(check, dest)
             count += inc
-            check.start_at += count
-            check.bake_at += count
-            check.done_at += count
-            inc = in_seconds(:min, 2)
+            add_count(check, count, inc)
           end
         else
           count = 0
-          count += inc until !in_hash.has_key?((l + count))
-          check.start_at += count
-          check.bake_at += count
-          check.done_at += count
+          while dest.has_key?((l + count))
+            count += inc
+          end
+          add_count(check, count, inc)
         end
  
         pot_vals = [check.start_at, check.done_at, check.bake_at]  #bake_at last, to check the oven again
         pot_vals.delete(l)
         pot_vals.each do |b|
           orig = b
-          if (in_hash.has_key?(b) && !in_hash[b][0].include?(check.name)) || check_oven(check, dest) || check_starts(check, dest) then check_against_times(in_hash, b, dest)
+          if (dest.has_key?(b) && !dest[b][0].include?(check.name)) || check_oven(check, dest) || check_starts(check, dest) then check_against_times(dest, b)
           end
         end
       end
     end
      yield if block_given?
    end
+   
+  def add_count(bread, count, inc)
+    bread.start_at += count
+    bread.bake_at += count
+    bread.done_at += count
+    inc = in_seconds(:min, 2) # allows inc to be set higher for the first estimate, and differently for each, 
+                              # but shrinks so as not to overshoot, to a common increment.
+  end
 
   def check_oven(current, dest_collection)    # First checks that previously placed baking starts do not occur within 
                                               # the current baking for this bread;
