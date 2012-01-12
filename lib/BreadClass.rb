@@ -37,10 +37,10 @@ class Bread
     end
   end
 
-  def check_against_times(dest, val_array)# Runs recursively through the existing values in the hash
-                                                       # checking for both the value and the bread's name in
-                                                       # association to avoid overwriting and repeats; also
-                                                       # checks for oven occupancy, assuming only 1 oven.
+  def check_against_times(dest, val_array)    # Runs recursively through the existing values in the hash
+                                              # checking for both the value and the bread's name in
+                                              # association to avoid overwriting and repeats; also
+                                              # checks for oven occupancy, assuming only 1 oven.
     all_vals = []
     check = self
 
@@ -72,7 +72,6 @@ class Bread
             diff = check.start_at.to_i - @conflict.start_at.to_i
             ap diff
             new_time = in_seconds(:min, 20)-diff.to_i
-            #new_time = new_time.to_f.abs
             new_time = new_time + in_seconds(:min, 2)
           else
             in_seconds(:min, 20)
@@ -105,7 +104,7 @@ class Bread
           add_count(check, count, inc)
         end
  
-        pot_vals = [check.start_at, check.done_at, check.bake_at] #bake_at last, to check the oven again
+        pot_vals = [check.start_at, check.done_at, check.bake_at] #bake_at last, to ensure no oven conflicts
         pot_vals.delete(l)
         pot_vals.each do |b|
           orig = b
@@ -121,14 +120,13 @@ class Bread
     bread.start_at += count
     bread.bake_at += count
     bread.done_at += count
-    inc = in_seconds(:min, 2) # allows inc to be set higher for the first estimate, and differently for each,
-                              # but shrinks so as not to overshoot, to a common increment.
+    inc = in_seconds(:min, 2)
   end
 
   def check_oven(current, dest_collection) # First checks that previously placed baking starts do not occur within
-                                              # the current baking for this bread;
-                                              # Second checks that the current baking does not occur within the baking
-                                              # of a previously placed bread.
+                                           # the current baking for this bread;
+                                           # Second checks that the current baking does not occur within the baking
+                                           # of a previously placed bread.
     if !dest_collection.empty?
       dest_collection.each do |k, v|
         if (current.bake_at < v[1].bake_at && v[1].bake_at < current.done_at) || (v[1].bake_at < current.bake_at && current.bake_at < v[1].done_at)
@@ -140,8 +138,7 @@ class Bread
     return false
   end
 
-  def check_starts(current, dest_collection) # Ensures that each bread gets 20 minutes for prep time before the next
-                                            # bread starts;
+  def check_starts(current, dest_collection) # Ensures 20 minute prep time for each bread;
     if !dest_collection.empty?
       dest_collection.each do |k, v|
         diff = current.start_at-v[1].start_at

@@ -56,43 +56,42 @@ class BreadCalc
     while i < bread_count.to_i
       case r
         when 0
-puts "What is the name of your first#{add_or} bread?"
-r += 1
-else
+          puts "What is the name of your first#{add_or} bread?"
+          r += 1
+        else
           puts "What is the name of your next bread?"
       end
 
       name = ask("", String)
-
-      sleep(0.1); puts""
-   rise = ask("For how long, in minutes, does it rise?", Integer)
-      sleep(0.1); puts""
-   bake = ask("For how long does it bake?", Integer)
-   sleep(0.1); puts""
-      loaves = ask("And how many loaves do you expect from this recipe?", Integer)
   
-   begin
-   @bread_list.push(Bread.new(name, rise, bake, loaves))
-
-   rescue SyntaxError => e
-          puts "*************EXCEPTION RAISED*************"
-   puts "Is your bread's name a number? That won't work!:"
-   puts "#{e}"
-  puts "EXITING PROGRAM"
-   Process.exit
-   rescue => e
-   puts "*************EXCEPTION RAISED*************"
-  puts "Something about this bread's data is incompatible with the current program."
-   puts "EXITING PROGRAM"
-   Process.exit
-   end
+      sleep(0.1); puts""
+      rise = ask("For how long, in minutes, does it rise?", Integer)
+      sleep(0.1); puts""
+      bake = ask("For how long does it bake?", Integer)
+      sleep(0.1); puts""
+      loaves = ask("And how many loaves do you expect from this recipe?", Integer)
+      
+      begin
+        @bread_list.push(Bread.new(name, rise, bake, loaves))
+      rescue SyntaxError => e
+        puts "*************EXCEPTION RAISED*************"
+        puts "Is your bread's name a number? That won't work!:"
+        puts "#{e}"
+        puts "EXITING PROGRAM"
+        Process.exit
+      rescue => e
+        puts "*************EXCEPTION RAISED*************"
+        puts "Something about this bread's data is incompatible with the current program."
+        puts "EXITING PROGRAM"
+        Process.exit
+      end
       i+=1
       puts ""; sleep(0.2)
       puts "Thanks!"
       puts ""; sleep(0.2)
-      end
+    end
 
-      count_loaves
+    count_loaves
   end
   def count_loaves
     @loaf_count = 0
@@ -262,8 +261,7 @@ else
   end
   
   def make_interiors # Gathers the breads whose total time together fits in the longest ones' rise times;
-                       # It first gathers the breads that fit within the time of the longest of all into @interior1;
-                       # the remaining breads are gathered into @interior2;
+                       # It first gathers the breads that fit within the time of the longest of all into @interior1; the remaining breads are gathered into @interior2;
     reverse_tot = @tot_sort.reverse
     #[[tot, obj], [tot2, obj2], etc ]
 
@@ -301,13 +299,9 @@ else
     end
   end
   
-  def time_interiors # Assigns times to each bread's starting, baking, and finishing, according to their
+  def time_interiors            # Assigns times to each bread's starting, baking, and finishing, according to their
                                 # order from the start time. @interior1 searches for a longest bread within itself,
-                                # which is set then to begin just after the longest-rising bread. The remaining breads
-                                # within @interior1 get their start time by subtracting their rise time from the end
-                                # time of @long_interior, so they bake when that one finishes, and so on. This last
-                                # part of the process process repeats for each bread in @interior2, except instead of
-                                # @long_interior as the base, it is @longest_rise;
+                                # which is set then to begin just after the longest-rising bread. The remaining breads within @interior1 get their start time by subtracting their rise time from the end time of @long_interior, so they bake when that one finishes, and so on. This last part of the process process repeats for each bread in @interior2, except instead of @long_interior as the base, it is @longest_rise;
     @interior1 = @interior1.sort.reverse #Currently sorting for total.
 
     @longest_rise.start_at = @sched_time
@@ -365,10 +359,8 @@ else
     end
   end
   
-  def final_ordering # Checks the breads' times against those of other breads, and adjusts the current
-                                 # bread's times accordingly. 20 minutes is the standard time for change, to account
-                                 # for the typical prep time for each bread. Other values are variable, depending on
-                                 # the bread's relation in time to previously-scheduled breads.
+  def final_ordering             # Checks the breads' times against those of other breads, and adjusts the current
+                                 # bread's times accordingly. 20 minutes is the standard time for change, to account for the typical prep time for each bread. Other values are variable, depending on the bread's relation in time to previously-scheduled breads.
     @final_sched.each do |k|
       if k == nil || k == false
         @final_sched.delete(k)
