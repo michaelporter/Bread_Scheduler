@@ -18,10 +18,6 @@ class BreadCalc
     @sched_time = Time.local(@bake_day.year, @bake_day.month, @bake_day.day, @start_hour, @start_min, 0)
     @store_time = @sched_time
     @alt_name = desc
-    if @alt_name != nil
-      @alt = ", #{alt_name},"
-    end
-
     @bread_list = []
     @rise_list = [] 
     @bake_list = []
@@ -119,12 +115,9 @@ class BreadCalc
     count_loaves
   end
 
-  def publish(alt_giv = nil)             # This gives the final resulting schedule, ordered, as it should be read by 
+  def publish                            # This gives the final resulting schedule, ordered, as it should be read by 
                                          # users.  This is currently the only place where the schedule is completely 
                                          # ordered;
-    if alt_giv != nil
-      @alt_name = alt_give
-    end
     @loaf_count = 0
     count_loaves
 
@@ -381,7 +374,7 @@ class BreadCalc
         @final_sched.delete(k)
         next
       end
-      k.check_against_times(@all_times, [k.start_at, k.bake_at, k.done_at], @all_times) {@all_times[k.start_at]=["Start #{k.name}", k]; @all_times[k.bake_at]=["Put #{k.name} into the oven", k]; @all_times[k.done_at]=["Take #{k.name} out of the oven", k]}
+      k.check_against_times(@all_times, [k.start_at, k.bake_at, k.done_at]) {@all_times[k.start_at]=["Start #{k.name}", k]; @all_times[k.bake_at]=["Put #{k.name} into the oven", k]; @all_times[k.done_at]=["Take #{k.name} out of the oven", k]}
     end
   end 
   
