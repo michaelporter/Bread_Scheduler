@@ -157,31 +157,32 @@ class DayCollector < Hash
         old_alt = ", #{self[old_obj].alt_name},"
         alt_give = agree("Would you like to change the alt description? (YES/NO)")
       elsif self[old_obj].alt_name == nil || self[old_obj].alt_name == false
-        old_at = ""
+        old_alt = ""
         alt_give = agree("Would you like to add a description?")
       end
       sleep(0.05); puts ""
 
       if alt_give == true
         alt_text = ask("What is the new description?", String)
-        alt_text = "--#{alt_text}"
+        alt_name = " #{alt_text}"
       elsif alt_give == false && self[old_obj].alt_name == nil && self[old_obj].alt_name == false
         alt_text = ""
       elsif alt_give == false && self[old_obj].alt_name != nil && self[old_obj].alt_name != false
-        alt_text = "--#{self[old_obj].alt_name}"
+        alt_text = self[old_obj].alt_name
+        alt_name = " #{self[old_obj].alt_name}"
       end
 
-      puts "** You entered #{date_input.strftime("%m/%d/%Y")}, at #{time_input}#{alt_text}. **\n\n"
+      puts "** You entered #{date_input.strftime("%m/%d/%Y")}, at #{time_input}#{alt_name}. **\n\n"
       check = agree("Is this correct?")
       sleep(0.05); puts ""
     end
     
     time_hr, time_min = parse_times(time_input)
-    new_day = BreadCalc.new(date_input, time_hr, time_min, alt_name)
+    new_day = BreadCalc.new(date_input, time_hr, time_min, alt_text)
 
     day = manage_new_day(date_input, new_day, old_obj)
 
-    if alt_name != nil && alt_name != false then alt_name = ", #{alt_name}"
+    if alt_name != nil && alt_name != false then alt_name = ",#{alt_name}"
     else alt_name = ""
     end
     puts "\n\n#{old_time}#{old_alt} changed to #{day}#{alt_name}."
