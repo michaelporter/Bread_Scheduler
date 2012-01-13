@@ -135,7 +135,7 @@ class BreadMenus
   end
 
   def wrapper # Provides automatic option to return to the previous menu, or the most
-                                    # sensible one following any major action;
+              # sensible one following any major action;
     yield if block_given?
     
     if @menu == :main then which = "main "

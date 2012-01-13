@@ -28,15 +28,6 @@ class Bread
     puts " "
   end
 
-  def in_seconds(type, number)
-    case type
-      when :min
-        number * 60
-      when :hour
-        number * 60 * 60
-    end
-  end
-
   def check_against_times(dest, val_array)    # Runs recursively through the existing values in the hash
                                               # checking for both the value and the bread's name in
                                               # association to avoid overwriting and repeats; also
@@ -115,6 +106,18 @@ class Bread
     end
      yield if block_given?
    end
+
+
+ private
+ 
+  def in_seconds(type, number)
+    case type
+      when :min
+        number * 60
+      when :hour
+        number * 60 * 60
+    end
+  end
    
   def add_count(bread, count, inc)
     bread.start_at += count

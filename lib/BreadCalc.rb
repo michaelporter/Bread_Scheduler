@@ -75,7 +75,7 @@ class BreadCalc
         @bread_list.push(Bread.new(name, rise, bake, loaves))
       rescue SyntaxError => e
         puts "*************EXCEPTION RAISED*************"
-        puts "Is your bread's name a number? That won't work!:"
+        puts "Oops!  Syntax Error when creating baking day:"
         puts "#{e}"
         puts "EXITING PROGRAM"
         Process.exit
@@ -102,14 +102,14 @@ class BreadCalc
 
   def run
     reset_all_things
-    find_longest_list
+    find_longest
     interior_scheduling
     publish
   end
     
   def run_without_text
     reset_all_things
-    find_longest_list
+    find_longest
     interior_scheduling
     count_loaves
   end
@@ -123,7 +123,7 @@ class BreadCalc
     alt = ""
 
     if @alt_name != false && @alt_name != nil
-      alt = "--#{@alt_name}"
+      alt = ", #{@alt_name}"
     else
       alt = ""
     end
@@ -152,39 +152,27 @@ class BreadCalc
 
   private
   
-  def find_longest_list
+  def find_longest
     find_longest_rise
     find_longest_bake
     find_longest_total
   end
     
   def find_longest_rise
-    @bread_list.each do |k|
-      if @rise_hash.has_key?(k.rise) then k.rise += 1
-      end
-      @rise_hash[k.rise] = k # { rise =>obj, rise2 => obj2, etc...}
-    end
+    make_hash(@rise_hash, :rise)
     @longest_rise = @rise_hash.sort[@rise_hash.sort.length-1][1]
     @to_delete = @longest_rise
     @rise_hash.delete(@rise_hash.index(@to_delete))
   end
   
   def find_longest_bake
-    @bread_list.each do |k|
-      if @bake_hash.has_key?(k.bake) then k.bake += 1
-      end
-      @bake_hash[k.bake] = k
-    end
+    make_hash(@bake_hash, :bake)
     
     @longest_bake = @bake_hash.sort[0][1]
   end
   
   def find_longest_total
-    @bread_list.each do |k|
-      if @total_hash.has_key?(k.total) then k.total += 1
-      end
-      @total_hash[k.total] = k
-    end
+    make_hash(@total_hash, :total)
     
     @total_hash.delete(@total_hash.index(@to_delete))
 
@@ -197,6 +185,22 @@ class BreadCalc
       @tot_name.push(k[1])
     end
     @longest_total
+  end
+
+  def make_hash(hash, which_value)
+    @bread_list.each do |k|
+      key = case which_value
+        when :rise
+          k.rise
+        when :bake
+          k.bake
+        when :total
+          k.total
+        end
+      if hash.has_key?(key) then key += 1
+      end
+      hash[key] = k
+    end
   end
 
   def reset(collection)
@@ -246,7 +250,7 @@ class BreadCalc
   end
 
   def dot_count(current, next_one) # Places one dot per line for every span of 35 minutes between
-                                          # two scheduled actions;
+                                   # two scheduled actions;
     diff = next_one - current
     count = (diff/in_seconds(:min, 35)).to_i
     count.times {puts "~"}
@@ -360,7 +364,7 @@ class BreadCalc
   end
   
   def final_ordering             # Checks the breads' times against those of other breads, and adjusts the current
-                                 # bread's times accordingly. 20 minutes is the standard time for change, to account for the typical prep time for each bread. Other values are variable, depending on the bread's relation in time to previously-scheduled breads.
+                                 # bread's times accordingly. 20 minutes is the standard time for change, to account for the typical prep time for each bread. Other values are variable, depending onthe bread's relation in time to previously-scheduled breads.
     @final_sched.each do |k|
       if k == nil || k == false
         @final_sched.delete(k)

@@ -12,15 +12,12 @@ class DayCollector < Hash
   def initialize
   end
 
-  def new_day # Gathers particular data for a new baking day; creates it, launches the day's calc
-                               # methods;
+  def new_day
     alt_text = nil
     alt_name = nil
 
     date_input, time_input, alt_text, alt_name = get_day_info
-
     new_day = make_new_day(date_input, time_input, alt_text)
-
     incorporate_new_day(date_input, new_day)
 
     puts "Thank you, and good luck!"
@@ -28,9 +25,7 @@ class DayCollector < Hash
 
   def delete_day(which_day)
     if self.has_key?(which_day)
-      if self[which_day].alt_name != nil && self[which_day].alt_name != false
-        alt_name = ", #{self[which_day].alt_name}, "
-      end
+      alt_name = stringify_alt(which_day)
       self.delete(which_day)
       puts "'#{which_day}#{alt_name}' deleted from record!"
      elsif self.empty?
@@ -63,8 +58,7 @@ class DayCollector < Hash
     puts "Thank you, and good luck!"
   end
   
-  def edit_bread(which_day, the_bread, the_data) # Allows already-processed breads to be edited;
-                                                               # The schedules are updated accordingly;
+  def edit_bread(which_day, the_bread, the_data)
     new_data = ask("What is the new value?")
     bread_obj = the_bread
 
@@ -86,8 +80,6 @@ class DayCollector < Hash
   end
   
   def publish_lists
-    i=0
-    l=0
     if self.empty?
       puts "No recorded baking schedules."
     else
@@ -101,15 +93,11 @@ class DayCollector < Hash
   end
 
   def list_breads(which_day)
-    i = 0
-    if self[which_day].alt_name != nil && self[which_day].alt_name != false
-      alt = ", #{self[which_day].alt_name}"
-    else
-      alt = ""
-    end
+    alt = stringify_alt(which_day)
     puts "\n\n\n\n\n\n"
     puts "BREADS FOR:"
     puts "#{self[which_day].bake_day.strftime("%m/%d/%Y")}#{alt}"
+    i = 0
     self[which_day].bread_list.each do |k|
       puts "#{i+=1}. #{k.name}."
     end
@@ -119,19 +107,16 @@ class DayCollector < Hash
   def change_date_and_time(which_day)
     old_obj = which_day
     old_time = self[old_obj].store_time.strftime("%D")
-    if self[old_obj].alt_name != (nil|false) then old_alt = ", #{self[old_obj].alt_name},"
-    end
+    old_alt = stringify_alt(old_obj)
     alt_text = nil
     alt_name = nil
     alt_give = nil
     
     date_input, time_input, alt_text, alt_name = get_day_info(true, old_obj)
-    
     new_day = make_new_day(date_input, time_input, alt_text)
-
     day = incorporate_new_day(date_input, new_day, old_obj)
 
-    if alt_name != nil && alt_name != false then alt_name = ",#{alt_name}"
+    if alt_name != nil && alt_name != false then alt_name = "#{alt_name}"
     else alt_name = ""
     end
     puts "\n\n#{old_time}#{old_alt} changed to #{day}#{alt_name}."
@@ -141,7 +126,7 @@ class DayCollector < Hash
 
 
  private
- 
+
  def get_day_info(change = false, old_obj = nil) # new day--false; existing day--true
    check = false
    until check == true
@@ -157,19 +142,17 @@ class DayCollector < Hash
   
        if alt_text == true
          alt_text = ask("What is this baking day for?", String)
-       end
-       sleep(0.05); puts ""
-        
-       if alt_text != nil && alt_text != false
-         alt_name = " for #{alt_text}"
+         alt_name = ", #{alt_text}"
        else
          alt_name = ""
        end
+       sleep(0.05); puts ""
+        
      elsif change == true
-       if self[old_obj].alt_name != (nil|false)# && self[old_obj].alt_name != false  #can this be condensed?
-         old_alt = ", #{self[old_obj].alt_name},"
+       if self[old_obj].alt_name != (nil|false)
+         old_alt = ", #{self[old_obj].alt_name}"
          alt_give = agree("Would you like to change the alt description? (YES/NO)")
-       elsif self[old_obj].alt_name == (nil|false) #|| self[old_obj].alt_name == false
+       elsif self[old_obj].alt_name == (nil|false)
          old_alt = ""
          alt_give = agree("Would you like to add a description? (YES/NO)")
        end
@@ -177,12 +160,10 @@ class DayCollector < Hash
 
        if alt_give == true
          alt_text = ask("What is the new description?", String)
-         alt_name = " #{alt_text}"
-       elsif alt_give == false && self[old_obj].alt_name == nil && self[old_obj].alt_name == false
-         alt_text = ""
-       elsif alt_give == false && self[old_obj].alt_name != nil && self[old_obj].alt_name != false
+         alt_name = ", #{alt_text}"
+       elsif alt_give == false
          alt_text = self[old_obj].alt_name
-         alt_name = " #{self[old_obj].alt_name}"
+         alt_name = stringify_alt(old_obj)
        end
      end
     puts "** You entered #{date_input.strftime("%m/%d/%Y")}, at #{time_input}#{alt_name}. **\n\n"
@@ -219,5 +200,13 @@ class DayCollector < Hash
     hr = input[0].to_i
     min = input[1].to_i
     return hr, min
+  end
+
+  def stringify_alt(day)
+    if self[day].alt_name != (nil|false)
+      alt = ", #{self[day].alt_name}"
+    else
+      alt = nil
+    end
   end
 end
