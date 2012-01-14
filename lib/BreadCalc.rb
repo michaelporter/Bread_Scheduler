@@ -14,10 +14,20 @@ class BreadCalc
     @bake_day = date
     @start_hour = hour
     @start_min = minute
+    begin
     @sched_time = Time.local(@bake_day.year, @bake_day.month, @bake_day.day, @start_hour, @start_min, 0)
+    rescue ArgumentError => e
+      puts "*************EXCEPTION RAISED*************"
+      puts "Oops!  The time input does not fit standard time notation!"
+      puts "#{e}"
+      puts "EXITING PROGRAM"
+      Process.exit
     @store_time = @sched_time
+    @temp = 78
     @alt_name = desc
     @pans = 0
+    @loaf_count = 0
+    @bread_count = 0
     @bread_list = []
     @rise_list = []
     @bake_list = []
@@ -35,130 +45,9 @@ class BreadCalc
     @first_grouping = nil
   end
 
-  def get_breads(menu_type = "main")
-    i = 0
-    r = 0
-    @loaf_count = 0
-    add_or = ""
-    add_make = ""
-    menu = menu_type
-    case menu
-      when /edit/i
-        add_make = "adding"
-        add_or = " added"
-      else
-        add_make = "making"
-    end
-
-    puts "\n\n\n\n\n\n\n\n\n\n\n\n\n\nNOTE: Rising times are estimates and may vary depending on the temperature\nand humidity of your kitchen.\n\n\n\n\n\n\n\n\n\n\n"
-    
-    temp = agree("Would you like to specify a kitchen temperature? (Default is 78 Deg. Fahrenheit)\n")
-    if temp == true
-      temp = ask("What is the new temperature?", Integer)
-    elsif temp == false
-      temp = nil
-    end
-    sleep(0.1); puts"\n\n"
-
-
-    bread_count = ask("How many breads will you be #{add_make}?", Integer)
-    
-    case menu
-      when /main/i
-        @pans = ask("And how many loaf pans do you have?", Integer)
-      when /edit/i
-        do_pans = agree("You are currently using #{@pans} loaf pans.  Would you like to change this?")
-        if do_pans == true
-          @pans = ask("How many loaf pans do you have?", Integer)
-        end
-      end
-    sleep(0.1); puts""
-
-    while i < bread_count.to_i
-      need_pan = false
-      pan_rise = 0
-      case r
-        when 0
-          name = ask("What is the name of your first#{add_or} bread?", String)
-          r += 1
-        else
-          name = ask("What is the name of your next bread?", String)
-      end
-      sleep(0.1); puts ""
-
-      rise = ask("For how long, in minutes, does it rise?", Integer); sleep(0.1); puts ""
-
-      pan = agree("Does it rise in the pan at all?"); sleep(0.1); puts ""
-      if pan == true
-        pan_rise = ask("For how long?", Integer); sleep(0.1); puts ""
-        need_pan = true
-        until pan_rise < rise  
-          pan_rise = ask("For how long?", Integer); sleep(0.1); puts ""
-          if pan_rise > rise
-            puts "That is longer than the total rise!"
-          end
-        end
-      end
-      bake = ask("For how long does it bake?", Integer); sleep(0.1); puts ""
-
-      p = 0
-      until p == 1
-        intro = case p
-          when -1
-            "H"
-          when 0
-            "And h"
-          end
-        loaves = ask("#{intro}ow many loaves do you expect from this recipe?", Integer)
-        sleep(0.1); puts ""
-        if loaves > @pans && pan == true
-          puts "That is more loaves than you have pans!"
-          p = -1
-        else
-          p = 1
-        end
-      end
-
-      begin
-        @bread_list.push(Bread.new(name, rise, bake, loaves, pan_rise, need_pan))
-      rescue SyntaxError => e
-        puts "*************EXCEPTION RAISED*************"
-        puts "Oops!  Syntax Error when creating baking day:"
-        puts "#{e}"
-        puts "EXITING PROGRAM"
-        Process.exit
-      rescue => e
-        puts "*************EXCEPTION RAISED*************"
-        puts "Something about this bread's data is incompatible with the current program."
-        puts "EXITING PROGRAM"
-        Process.exit
-      end
-      i+=1
-      puts ""; sleep(0.2)
-      puts "Thanks!"
-      puts ""; sleep(0.2)
-    end
-
-    adjust_for_temp(temp)
-    count_loaves
-  end
-
-  def adjust_for_temp(temp)
-    unless temp == nil
-      @bread_list.each do |k|
-        if temp < 70
-          k.rise = k.rise*1.5
-          k.pan_rise = k.pan_rise*1.5
-          k.int_rise = k.rise - k.pan_rise
-          k.total = k.rise + k.bake + 20
-        elsif temp < 61
-          k.rise = k.rise*2
-          k.pan_rise = k.pan_rise*2
-          k.int_rise = k.rise - k.pan_rise
-          k.total = k.rise + k.bake + 20
-        end
-      end
-    end
+  def set_up_day(menu_type = "main")
+    gather_conditions(menu_type)
+    gather_breads(menu_type)
   end
 
   def count_loaves
@@ -219,6 +108,143 @@ class BreadCalc
 
 
   private
+
+  def gather_conditions(menu_type)
+    add_make = ""
+    case menu_type
+      when /edit/i
+        add_make = "adding"
+      else
+        add_make = "making"
+    end
+
+    @temp = get_temp
+    sleep(0.1); puts"\n\n"
+    @bread_count = ask("How many breads will you be #{add_make}?", Integer); sleep(0.1)
+    
+    case menu_type
+      when /main/i
+        @pans = ask("And how many loaf pans do you have?", Integer)
+      when /edit/i
+        do_pans = agree("You are currently using #{@pans} loaf pans.  Would you like to change this?")
+        if do_pans == true
+          @pans = ask("How many loaf pans do you have?", Integer)
+        end
+      end
+    sleep(0.1); puts""
+  end
+
+  def get_temp
+    puts "\n\n\n\n\n\n\n\n\n\n\n\n\n\nNOTE: Rising times are estimates and may vary depending on the temperature\nand humidity of your kitchen.\n\n\n\n\n\n\n\n\n\n\n"
+    temp = agree("Would you like to specify a kitchen temperature? (Default is 78 Deg. Fahrenheit)\n")
+    if temp == true
+      temp = ask("What is the new temperature?", Integer)
+    elsif temp == false
+      temp = nil
+    end
+  end
+  
+  def gather_breads(menu_type)
+    i = 0
+    while i < @bread_count.to_i
+      r = 0
+      name, rise, bake, need_pan, pan_rise, loaves = get_bread_info(r, menu_type)
+      r += 1
+
+      begin
+        @bread_list.push(Bread.new(name, rise, bake, loaves, pan_rise, need_pan))
+      rescue SyntaxError => e
+        puts "*************EXCEPTION RAISED*************"
+        puts "Oops!  Syntax Error when adding that bread:"
+        puts "#{e}"
+        puts "EXITING PROGRAM"
+        Process.exit
+      rescue => e
+        puts "*************EXCEPTION RAISED*************"
+        puts "Something about this bread's data is incompatible with the current program."
+        puts "EXITING PROGRAM"
+        Process.exit
+      end
+      i+=1
+      puts ""; sleep(0.2); puts "Thanks!"; puts ""; sleep(0.2)
+    end
+    adjust_for_temp(@temp)
+    count_loaves
+  end
+
+  def get_bread_info(r, menu_type)
+    add_or = ""
+    case menu_type
+      when /edit/i
+        add_or = " added"
+    end
+    name = ""
+    rise = 0
+    bake = 0
+    need_pan = false
+    pan_rise = 0
+    loaves = 0
+    case r
+      when 0
+        name = ask("What is the name of your first#{add_or} bread?", String)
+        r += 1
+      else
+        name = ask("What is the name of your next bread?", String)
+    end
+    sleep(0.1); puts ""
+
+    rise = ask("For how long, in minutes, does it rise?", Integer); sleep(0.1); puts ""
+
+    pan = agree("Does it rise in the pan at all?"); sleep(0.1); puts ""
+    if pan == true
+      pan_rise = ask("For how long?", Integer); sleep(0.1); puts ""
+      need_pan = true
+      until pan_rise < rise  
+        pan_rise = ask("For how long?", Integer); sleep(0.1); puts ""
+        if pan_rise > rise
+          puts "That is longer than the total rise!"
+        end
+      end
+    end
+    bake = ask("For how long does it bake?", Integer); sleep(0.1); puts ""
+
+    p = 0
+    until p == 1
+      intro = case p
+        when -1
+          "H"
+        when 0
+          "And h"
+        end
+      loaves = ask("#{intro}ow many loaves do you expect from this recipe?", Integer); sleep(0.1); puts ""
+      if loaves > @pans && pan == true
+        puts "That is more loaves than you have pans!"
+        p = -1
+      else
+        p = 1
+      end
+    end
+    return name, rise, bake, need_pan, pan_rise, loaves
+  end
+
+  def adjust_for_temp(temp)    # Estimates for now, based on colloquial knowledge, 
+                               # pending discovery of more accurate claims
+    unless temp == nil
+      @bread_list.each do |k|
+        if temp < 70
+          k.rise = k.rise*1.5
+          k.pan_rise = k.pan_rise*1.5
+          k.int_rise = k.rise - k.pan_rise
+          k.total = k.rise + k.bake + 20
+        elsif temp < 61
+          k.rise = k.rise*2
+          k.pan_rise = k.pan_rise*2
+          k.int_rise = k.rise - k.pan_rise
+          k.total = k.rise + k.bake + 20
+        end
+      end
+    end
+  end
   
   def find_longest
     find_longest_rise
