@@ -22,6 +22,7 @@ class BreadCalc
       puts "#{e}"
       puts "EXITING PROGRAM"
       Process.exit
+    end
     @store_time = @sched_time
     @temp = 78
     @alt_name = desc
@@ -71,9 +72,9 @@ class BreadCalc
     count_loaves
   end
 
-  def publish # This gives the final resulting schedule, ordered, as it should be read by
-                                         # users. This is currently the only place where the schedule is completely
-                                         # ordered;
+  def publish                # This gives the final resulting schedule, ordered, as it should be read by
+                             # users. This is currently the only place where the schedule is completely
+                             # ordered;
     @loaf_count = 0
     count_loaves
 
@@ -359,7 +360,8 @@ class BreadCalc
   end
   
   def make_interiors # Gathers the breads whose total time together fits in the longest ones' rise times;
-                       # It first gathers the breads that fit within the time of the longest of all into @interior1; the remaining breads are gathered into @interior2;
+                       # It first gathers the breads that fit within the time of the longest of all into 
+                       # @interior1; the remaining breads are gathered into @interior2;
     reverse_tot = @tot_sort.reverse
     #[[tot, obj], [tot2, obj2], etc ]
 
@@ -399,7 +401,11 @@ class BreadCalc
   
   def time_interiors            # Assigns times to each bread's starting, baking, and finishing, according to their
                                 # order from the start time. @interior1 searches for a longest bread within itself,
-                                # which is set then to begin just after the longest-rising bread. The remaining breads within @interior1 get their start time by subtracting their rise time from the end time of @long_interior, so they bake when that one finishes, and so on. This last part of the process process repeats for each bread in @interior2, except instead of @long_interior as the base, it is @longest_rise;
+                                # which is set then to begin just after the longest-rising bread. The remaining
+                                # breads within @interior1 get their start time by subtracting their rise time 
+                                # from the end time of @long_interior, so they bake when that one finishes, and so
+                                # on. This last part of the process process repeats for each bread in @interior2,
+                                # except instead of @long_interior as the base, it is @longest_rise;
     @interior1 = @interior1.sort.reverse #Currently sorting for total.
 
     @longest_rise.start_at = @sched_time
@@ -461,7 +467,9 @@ class BreadCalc
   end
   
   def final_ordering             # Checks the breads' times against those of other breads, and adjusts the current
-                                 # bread's times accordingly. 20 minutes is the standard time for change, to account for the typical prep time for each bread. Other values are variable, depending onthe bread's relation in time to previously-scheduled breads.
+                                 # bread's times accordingly. 20 minutes is the standard time for change, to
+                                 # account for the typical prep time for each bread. Other values are variable, 
+                                 # depending onthe bread's relation in time to previously-scheduled breads.
     @final_sched.each do |k|
       if k == nil || k == false
         @final_sched.delete(k)
