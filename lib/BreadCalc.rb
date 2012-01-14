@@ -1,7 +1,6 @@
 require 'lib/BreadClass.rb'
 
 # Current Assumptions
-  # Unlimited Loaf Pans
   # 20-minute Prep Time before Rise begins
   # All temperature and environment influence on the Rise time. (aka, it is always summertime in the kitchen)
   # 1 oven
