@@ -3,11 +3,11 @@ require 'ap'
 class Bread
   attr_accessor :name, :rise, :int_rise, :pan_rise, :need_pan, :bake, :total, :loaves, :start_at, :pan_at, :bake_at, :done_at
   
-  def initialize(name, rise_time, pan_rise, bake_time, loaves, need_pan)
+  def initialize(name, rise_time, bake_time, loaves, pan_rise = 0, need_pan = false)
     @name = name
-    @rise = rise_time + 20
+    @rise = rise_time
     @int_rise = rise_time - pan_rise
-    @pan_rise = pan_rise
+    @pan_rise = pan_rise  #also need to update this for temp
     @need_pan = need_pan
     @pan_at = nil
     @bake = bake_time
@@ -172,8 +172,11 @@ class Bread
         new_time = in_seconds(:min, 20)-diff.to_i
         new_time = new_time + in_seconds(:min, 2)
       when check_pans(current_bread, dest, pan_count) && !check_oven(current_bread, dest) && !check_starts(current_bread, dest)
-        new_time = (@conflict.done_at.to_i - current_bread.pan_at.to_i) + in_seconds(:min, 2)
-        new_time
+        ap @conflict
+        unless @conflict == nil
+          new_time = (@conflict.done_at.to_i - current_bread.pan_at.to_i) + in_seconds(:min, 2)
+          new_time
+        end
       else
         in_seconds(:min, 20)
     end
@@ -201,7 +204,7 @@ class Bread
     elsif check_pans(current_bread, dest, pan_count) && !check_oven(current_bread, dest) && !check_starts(current_bread, dest)
       count = 0
       while check_pans(current_bread, dest, pan_count)
-        count += inc
+        count += inc unless inc == nil
         add_count(current_bread, count, inc)
       end
     else
@@ -264,15 +267,20 @@ class Bread
     if !dest_collection.empty? && current.need_pan != false
       pan_used = 0
       dest_collection.each do |k, v|
-        if v[1].pan_at < current.pan_at && current.pan_at < v[1].done_at
-          pan_used += v[1].loaves unless v[1].need_pan == false
-          pan_track.push([v[1].done_at, v[1]]) unless v[1].need_pan == false
+        unless v[1].need_pan == false || v[1] == current
+          if v[1].pan_at < current.pan_at && current.pan_at < v[1].done_at
+            pan_used += v[1].loaves
+            pan_track.push([v[1].done_at, v[1]])
+            ap pan_track
+          end
         end
         if pan_used + current.loaves > pan_num || pan_used == pan_num
           pan_track.sort!
           pan_track.reverse!
-          @conflict = pan_track[0][1]
-          return true
+          unless pan_track.empty?
+            @conflict = pan_track[0][1]
+            return true
+          end
         end
       end
     end

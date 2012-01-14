@@ -50,6 +50,17 @@ class BreadCalc
         add_make = "making"
     end
 
+    puts "\n\n\n\n\n\n\n\n\n\n\n\n\n\nNOTE: Rising times are estimates and may vary depending on the temperature\nand humidity of your kitchen.\n\n\n\n\n\n\n\n\n\n\n"
+    
+    temp = agree("Would you like to specify a kitchen temperature? (Default is 78 Deg. Fahrenheit)\n")
+    if temp == true
+      temp = ask("What is the new temperature?", Integer)
+    elsif temp == false
+      temp = nil
+    end
+    sleep(0.1); puts"\n\n"
+
+
     bread_count = ask("How many breads will you be #{add_make}?", Integer)
     
     case menu
@@ -61,7 +72,6 @@ class BreadCalc
           @pans = ask("How many loaf pans do you have?", Integer)
         end
       end
-
     sleep(0.1); puts""
 
     while i < bread_count.to_i
@@ -74,25 +84,23 @@ class BreadCalc
         else
           name = ask("What is the name of your next bread?", String)
       end
+      sleep(0.1); puts ""
 
-      sleep(0.1); puts ""
-      rise = ask("For how long, in minutes, does it rise?", Integer)
-      sleep(0.1); puts ""
-      pan = agree("Does it rise in the pan at all?")
-      sleep(0.1); puts ""
+      rise = ask("For how long, in minutes, does it rise?", Integer); sleep(0.1); puts ""
+
+      pan = agree("Does it rise in the pan at all?"); sleep(0.1); puts ""
       if pan == true
-        pan_rise = ask("For how long?", Integer)
+        pan_rise = ask("For how long?", Integer); sleep(0.1); puts ""
         need_pan = true
-        sleep(0.1); puts ""
         until pan_rise < rise  
-          pan_rise = ask("For how long?", Integer)
-          sleep(0.1); puts ""
+          pan_rise = ask("For how long?", Integer); sleep(0.1); puts ""
+          if pan_rise > rise
+            puts "That is longer than the total rise!"
+          end
         end
-      else 
-        pan_rise = 0
       end
-      bake = ask("For how long does it bake?", Integer)
-      sleep(0.1); puts ""
+      bake = ask("For how long does it bake?", Integer); sleep(0.1); puts ""
+
       p = 0
       until p == 1
         intro = case p
@@ -110,11 +118,9 @@ class BreadCalc
           p = 1
         end
       end
-  
 
-      
       begin
-        @bread_list.push(Bread.new(name, rise, pan_rise, bake, loaves, need_pan))
+        @bread_list.push(Bread.new(name, rise, bake, loaves, pan_rise, need_pan))
       rescue SyntaxError => e
         puts "*************EXCEPTION RAISED*************"
         puts "Oops!  Syntax Error when creating baking day:"
@@ -133,8 +139,28 @@ class BreadCalc
       puts ""; sleep(0.2)
     end
 
+    adjust_for_temp(temp)
     count_loaves
   end
+
+  def adjust_for_temp(temp)
+    unless temp == nil
+      @bread_list.each do |k|
+        if temp < 70
+          k.rise = k.rise*1.5
+          k.pan_rise = k.pan_rise*1.5
+          k.int_rise = k.rise - k.pan_rise
+          k.total = k.rise + k.bake + 20
+        elsif temp < 61
+          k.rise = k.rise*2
+          k.pan_rise = k.pan_rise*2
+          k.int_rise = k.rise - k.pan_rise
+          k.total = k.rise + k.bake + 20
+        end
+      end
+    end
+  end
+
   def count_loaves
     @loaf_count = 0
     @bread_list.each do |k|
@@ -351,7 +377,7 @@ class BreadCalc
     @interior1 = @interior1.sort.reverse #Currently sorting for total.
 
     @longest_rise.start_at = @sched_time
-    @longest_rise.pan_at = @sched_time + in_seconds(:min, @longest_rise.int_rise) unless @longest_rise.pan_rise == 0
+    @longest_rise.pan_at = @sched_time + in_seconds(:min, @longest_rise.int_rise) unless @longest_rise.need_pan == false
     @longest_rise.bake_at = @sched_time + in_seconds(:min, @longest_rise.rise)
     @longest_rise.done_at = @sched_time + in_seconds(:min, @longest_rise.total)
 
@@ -360,7 +386,7 @@ class BreadCalc
       @sched_time += in_seconds(:min, 20)
 
       @long_interior.start_at = @sched_time
-      @long_interior.pan_at = @sched_time + in_seconds(:min, @long_interior.int_rise) unless @longest_rise.pan_rise == 0
+      @long_interior.pan_at = @sched_time + in_seconds(:min, @long_interior.int_rise) unless @long_interior.need_pan == false
       @long_interior.bake_at = @sched_time + in_seconds(:min, @long_interior.rise)
       @long_interior.done_at = @sched_time + in_seconds(:min, @long_interior.total)
 
@@ -370,7 +396,7 @@ class BreadCalc
 
       @interior1.each do |k|
         k.start_at = @sched_time - in_seconds(:min, k.rise)
-        k.pan_at = k.start_at + in_seconds(:min, k.int_rise) unless k.pan_rise == 0
+        k.pan_at = k.start_at + in_seconds(:min, k.int_rise) unless k.need_pan == false
         k.bake_at = @sched_time + in_seconds(:min, 2)
         @sched_time += in_seconds(:min, k.bake)
         k.done_at = @sched_time += in_seconds(:min, 2)
@@ -417,7 +443,7 @@ class BreadCalc
       end
       k.check_against_times(@all_times, @pans, [k.start_at, k.pan_at, k.bake_at, k.done_at]) do
         @all_times[k.start_at] = ["Start #{k.name}", k]
-        if k.pan_rise != 0
+        if k.need_pan != false
           @all_times[k.pan_at] = ["Put #{k.name} into the loaf pan", k]
         end
         @all_times[k.bake_at] = ["Put #{k.name} into the oven", k]
@@ -425,6 +451,7 @@ class BreadCalc
       end
       @all_times = k.check_first_bread(@all_times, @pans, @store_time)
     end
+    ap @all_times
 
   end
   

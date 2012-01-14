@@ -130,15 +130,12 @@ class DayCollector < Hash
  def get_day_info(change = false, old_obj = nil) # new day--false; existing day--true
    check = false
    until check == true
-     date_input = ask("What day will you be baking? (Please enter 'MM/DD/YYYY')", Date) {|q| q.validate = /(([0-1]?[0-9]{1})|([2][0-4]?))\/(([0-2]?[0-9]{1})|([3][0-1]))\/([0-9]{4})/}
-     sleep(0.05); puts ""
+     date_input = ask("What day will you be baking? (Please enter 'MM/DD/YYYY')", Date) {|q| q.validate = /(([0-1]?[0-9]{1})|([2][0-4]?))\/(([0-2]?[0-9]{1})|([3][0-1]))\/([0-9]{4})/}; sleep(0.05); puts ""
   
-     time_input = ask("What time will you start? Please enter in 24-hour format (hour:minute)", String){|q| q.validate = /(([1]?[0-9]{1})|([2][0-4]{1})):([1-6]?[0-9]{1})/}
-     sleep(0.05); puts ""
+     time_input = ask("What time will you start? Please enter in 24-hour format (hour:minute)", String){|q| q.validate = /(([1]?[0-9]{1})|([2][0-4]{1})):([1-6]?[0-9]{1})/}; sleep(0.05); puts ""
   
      if change == false
-       alt_text = agree("Would you like to give this baking day a short description? (YES/NO)")
-       sleep(0.05); puts ""
+       alt_text = agree("Would you like to give this baking day a short description? (YES/NO)"); sleep(0.05); puts ""
   
        if alt_text == true
          alt_text = ask("What is this baking day for?", String)
@@ -167,8 +164,7 @@ class DayCollector < Hash
        end
      end
     puts "** You entered #{date_input.strftime("%m/%d/%Y")}, at #{time_input}#{alt_name}. **\n\n"
-    check = agree("Is this correct?")
-    sleep(0.05); puts ""
+    check = agree("Is this correct?"); sleep(0.05); puts ""
     end
     return date_input, time_input, alt_text, alt_name
   end

@@ -5,31 +5,7 @@ require 'rubygems'
 gem 'highline', '= 1.5.0'
 require 'highline/import'
 
-puts %Q{
-
-
-
-
-
-
-
-
-
-
-
-*** Welcome to Mike's Baking Calculator! ***
-
-
-
-
-
-
-
-
-
-
-
-}
+puts %Q{\n\n\n\n\n\n\n\n\n\n\n\n*** Welcome to Mike's Baking Calculator! ***\n\n\n\n\n\n\n\n\n\n\n\n}
 main_menu = BreadMenus.new
 
 sleep(1.5)

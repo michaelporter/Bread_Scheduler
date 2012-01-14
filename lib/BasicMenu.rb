@@ -55,11 +55,9 @@ class BreadMenus
     loop do
       puts "\n\n\n\n\n\n\n\n\n\n\n-----------------*********-----------------\n\n"
       puts "             BREAD-DELETE MENU \n\n"
-      puts "-----------------*********-----------------\n\n\n\n\n\n\n\n\n\n"
-      sleep(0.8)
+      puts "-----------------*********-----------------\n\n\n\n\n\n\n\n\n\n"; sleep(0.8)
       @day_obj.publish
-      puts "\n\n-----------------*********-----------------\n\n"
-      sleep(1)
+      puts "\n\n-----------------*********-----------------\n\n"; sleep(1)
       
       choose do |b|
         b.prompt = "Which bread would you like to delete?"
@@ -102,8 +100,7 @@ class BreadMenus
     loop do
       puts "\n\n\n\n\n\n\n\n\n\n-----------------*********-----------------\n\n"
       puts "             DATA EDITING MENU \n\n"
-      puts "-----------------*********-----------------\n\n\n\n\n\n\n\n\n\n"
-      sleep(0.7)
+      puts "-----------------*********-----------------\n\n\n\n\n\n\n\n\n\n"; sleep(0.7)
       bread.publish_data
     
       choose do |d|
@@ -146,9 +143,7 @@ class BreadMenus
     elsif @menu == :save then which = "save "
     end
     
-    puts "\n\n"
-
-    sleep(0.5)
+    puts "\n\n"; sleep(0.5)
 
     an = agree("Return to #{which}menu?") #by default continues on with loop if answer is positive;
     
@@ -201,8 +196,7 @@ class BreadMenus
       @day_obj = @breads[@breads.keys[0]]
       puts "\n\n\n\n\n\n\n\n\n\n\n\n"
       puts "** NOTE: You only have one baking day saved. **"
-      puts "\n\n\n\n\n\n\n\n\n\n\n"
-      sleep(1)
+      puts "\n\n\n\n\n\n\n\n\n\n\n"; sleep(1)
     else
       day_menu
     end
