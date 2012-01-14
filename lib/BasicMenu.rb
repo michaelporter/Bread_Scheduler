@@ -15,7 +15,7 @@ class BreadMenus
     @menu = :main
     loop do
     puts "\n\n\n\n\n\n\n\n-----------------*********-----------------\n\n"
-    puts " MAIN MENU \n\n"
+    puts "                 MAIN MENU \n\n"
     puts "-----------------*********-----------------\n\n\n\n"
     
       choose do |m|
@@ -33,10 +33,10 @@ class BreadMenus
   def edit_menu(dayobjs)
     @menu = :edit
     loop do
-      puts "\n\n\n\n\n-----------------*********-----------------"
+      puts "\n\n\n\n\n\n-----------------*********-----------------"
       puts " You are editing for #{@which_day} "
       puts "-----------------*********-----------------\n\n"
-      puts " EDIT MENU \n\n"
+      puts "                 EDIT MENU \n\n"
       puts "-----------------*********-----------------\n\n\n\n"
       choose do |e|
         e.prompt = "What would you like to do?"
@@ -54,7 +54,7 @@ class BreadMenus
     @menu = :delete
     loop do
       puts "\n\n\n\n\n\n\n\n\n\n\n-----------------*********-----------------\n\n"
-      puts " BREAD-DELETE MENU \n\n"
+      puts "             BREAD-DELETE MENU \n\n"
       puts "-----------------*********-----------------\n\n\n\n\n\n\n\n\n\n"
       sleep(0.8)
       @day_obj.publish
@@ -75,7 +75,7 @@ class BreadMenus
     @menu = :bread
     loop do
       puts "\n\n\n\n\n\n\n\n\n\n-----------------*********-----------------\n\n"
-      puts " BREADS MENU \n\n"
+      puts "                BREADS MENU \n\n"
       puts "-----------------*********-----------------\n\n\n\n\n\n\n\n\n\n"
       sleep(0.8)
       @day_obj.bread_list.each do |k|
@@ -101,7 +101,7 @@ class BreadMenus
     bread = bread_choice
     loop do
       puts "\n\n\n\n\n\n\n\n\n\n-----------------*********-----------------\n\n"
-      puts " DATA EDITING MENU \n\n"
+      puts "             DATA EDITING MENU \n\n"
       puts "-----------------*********-----------------\n\n\n\n\n\n\n\n\n\n"
       sleep(0.7)
       bread.publish_data
@@ -122,7 +122,7 @@ class BreadMenus
 
   def day_menu # For returning a BreadCalc object value for a chosen day to the edit menu;
       puts "\n\n\n\n\n\n\n\n\n\n\n\n-----------------*********-----------------\n\n"
-      puts " DAYS MENU \n\n"
+      puts "                 DAYS MENU \n\n"
       puts "-----------------*********-----------------\n\n\n\n"
       choose do |s|
         s.prompt = "Please choose a schedule."

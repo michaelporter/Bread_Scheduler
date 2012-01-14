@@ -1,19 +1,33 @@
+require 'rubygems'
+require 'ap'
 class Bread
-  attr_accessor :name, :rise, :bake, :total, :loaves, :start_at, :bake_at, :done_at
+  attr_accessor :name, :rise, :int_rise, :pan_rise, :need_pan, :bake, :total, :loaves, :start_at, :pan_at, :bake_at, :done_at
   
-  def initialize(name, rise_time, bake_time, loaf)
+  def initialize(name, rise_time, pan_rise, bake_time, loaves, need_pan)
     @name = name
     @rise = rise_time + 20
+    @int_rise = rise_time - pan_rise
+    @pan_rise = pan_rise
+    @need_pan = need_pan
+    @pan_at = nil
     @bake = bake_time
     @total = rise_time + bake_time + 20
-    @loaves = loaf
+    @loaves = loaves
     @start_at = 0.0
-    @conflict = nil # Container for Oven-time and Start-time conflicts
+    @conflict = nil # Container for Oven-time, Start-time, and Pan-time conflicts
   end
 
   def <=>(other)
     return nil unless other.is_a? Bread
     self.total <=> other.total
+  end
+
+  def self.first_bread
+    @@first_bread
+  end
+
+  def self.orig_vals
+    @@orig_vals = []
   end
 
   def publish_data
@@ -28,12 +42,17 @@ class Bread
     puts " "
   end
 
-  def check_against_times(dest, val_array)    # Runs recursively through the existing values in the hash
+  def check_against_times(dest, pan_count, val_array)    # Runs recursively through the existing values in the hash
                                               # checking for both the value and the bread's name in
                                               # association to avoid overwriting and repeats; also
                                               # checks for oven occupancy, assuming only 1 oven.
     all_vals = []
     check = self
+
+    if dest.empty?
+      @@first_bread = check
+      @@orig_vals = [check.start_at, check.pan_at, check.bake_at, check.done_at]
+    end
 
     if val_array.is_a? Array
       all_vals = val_array
@@ -42,73 +61,170 @@ class Bread
     end
                                                   
     all_vals.each do |l|
-      if (dest.has_key?(l) && !dest[l].include?(check)) || check_oven(check, dest) || check_starts(check, dest)
-        saver = l
-        count = 0
-        inc = case
-          when (l == check.bake_at && check_oven(check, dest))
-            if @conflict.bake_at < check.bake_at && check.bake_at < @conflict.done_at
-              diff = check.bake_at.to_i - @conflict.bake_at.to_i
-              if diff == 0
-                new_time = (@conflict.done_at.to_i-@conflict.bake_at.to_i) + in_seconds(:min, 2)
-              else
-                left = (@conflict.done_at.to_i-@conflict.bake_at.to_i) - diff.to_i
-                new_time = left.to_f.abs
-              end
-            elsif check.bake_at < @conflict.bake_at && @conflict.bake_at < check.done_at
-              new_time = @conflict.done_at-check.bake_at + in_seconds(:min, 2)
-            end
-            new_time.to_i
-          when !check_oven(check, dest) && check_starts(check, dest) # Priority to settling oven time
-            diff = check.start_at.to_i - @conflict.start_at.to_i
-            ap diff
-            new_time = in_seconds(:min, 20)-diff.to_i
-            new_time = new_time + in_seconds(:min, 2)
-          else
-            in_seconds(:min, 20)
-          end
+      if l == nil
+        next
+      end
 
-        if l == check.bake_at && check_oven(check, dest)
-          puts "inside the if"
-          count = 0
-          while dest.has_key?((l + count)) || (check_oven(check, dest)) || check_starts(check, dest)
-            count += inc
-            add_count(check, count, inc)
-          end
-        elsif l != check.bake_at && !(dest.has_key?(l) && !dest[l].include?(check)) && check_oven(check, dest)
-          count = 0
-          while check_oven(check, dest)
-            count += inc
-            add_count(check, count, inc)
-          end
-        elsif !check_oven(check, dest) && check_starts(check, dest)
-          count = 0
-          while check_starts(check, dest)
-            count += inc
-            add_count(check, count, inc)
-          end
-        else
-          count = 0
-          while dest.has_key?((l + count))
-            count += inc
-          end
-          add_count(check, count, inc)
-        end
- 
-        pot_vals = [check.start_at, check.done_at, check.bake_at] #bake_at last, to ensure no oven conflicts
-        pot_vals.delete(l)
-        pot_vals.each do |b|
-          orig = b
-          if (dest.has_key?(b) && !dest[b][0].include?(check.name)) || check_oven(check, dest) || check_starts(check, dest) then check_against_times(dest, b)
-          end
-        end
+      if (dest.has_key?(l) && !dest[l].include?(check)) || check_oven(check, dest) || check_starts(check, dest) || check_pans(check, dest, pan_count)
+        count = 0
+        inc = get_inc(check, l, dest, pan_count)
+
+        run_equipment_checks(check, l, dest, pan_count, inc)
+
+        check_new_values(check, l, pan_count, dest)
       end
     end
-     yield if block_given?
-   end
+    yield if block_given?
+  end
 
+  def check_first_bread(dest, pan_count, start_time)
+    check = @@first_bread
+    @@orig_vals = [check.start_at, check.pan_at, check.bake_at, check.done_at]
+    val_array = @@orig_vals
+
+    val_array.each do |fb|
+      if fb == nil
+        next
+      end
+
+      if check_oven(check, dest) || check_starts(check, dest) || check_pans(check, dest, pan_count)
+
+        inc = get_inc(check, fb, dest, pan_count)
+        
+        run_equipment_checks(check, fb, dest, pan_count, inc)
+ 
+        check_new_values(check, fb, pan_count, dest)
+      end
+    end
+
+    if check.start_at != @@orig_vals[0]
+      @@orig_vals.each do |o|
+        dest.delete(o)
+      end
+
+      dest[check.start_at] = ["Start #{check.name}", check]
+      dest[check.pan_at] = ["Put #{check.name} into the loaf pan", check] unless check.need_pan == false && !dest.has_key?(check.pan_at)
+      dest[check.bake_at] = ["Put #{check.name} into the oven", check]
+      dest[check.done_at] = ["Take #{check.name} out of the oven", check]
+
+      dest_earliest = dest.sort[0][0]
+      diff = dest_earliest.to_i - start_time.to_i
+
+      update_all_breads_times(dest, diff)
+    end
+    return dest
+  end
 
  private
+
+  def update_all_breads_times(dest, diff)   # Problem Area: For some reason, unable to loop through
+                                            # the dest hash itself; it would write certain values twice,
+                                            # subtracting the diff twice, and leading to an inaccurate
+                                            # schedule.  This, so far, works.
+    breads = []
+    dest.each do |ke, va|
+      if !breads.include?(va[1])
+        breads.push(va[1])
+      end
+    end
+    breads.each do |bread|
+      val = dest.values_at(bread.start_at)
+      dest.delete(bread.start_at)
+      bread.start_at -= diff
+      dest[bread.start_at] = val[0]
+
+      unless bread.need_pan == false
+        val = dest.values_at(bread.pan_at)
+        dest.delete(bread.pan_at)
+        bread.pan_at -= diff
+        dest[bread.pan_at] = val[0]
+      end
+
+      val = dest.values_at(bread.bake_at)
+      dest.delete(bread.bake_at)
+      bread.bake_at -= diff
+      dest[bread.bake_at] = val[0]
+
+      val = dest.values_at(bread.done_at)
+      dest.delete(bread.done_at)
+      bread.done_at -= diff
+      dest[bread.done_at] = val[0]
+    end
+  end
+
+  def get_inc(current_bread, current_value, dest, pan_count)
+    case
+      when current_value == current_bread.bake_at && check_oven(current_bread, dest)
+        if @conflict.bake_at < current_bread.bake_at && current_bread.bake_at < @conflict.done_at
+          diff = current_bread.bake_at.to_i - @conflict.bake_at.to_i
+          if diff == 0
+            new_time = (@conflict.done_at.to_i-@conflict.bake_at.to_i) + in_seconds(:min, 2)
+          else
+            left = (@conflict.done_at.to_i-@conflict.bake_at.to_i) - diff.to_i
+            new_time = left.to_f.abs
+          end
+        elsif current_bread.bake_at < @conflict.bake_at && @conflict.bake_at < current_bread.done_at
+          new_time = @conflict.done_at-current_bread.bake_at + in_seconds(:min, 2)
+        end
+        new_time.to_i
+      when !check_oven(current_bread, dest) && check_starts(current_bread, dest) # Priority to settling oven time
+        diff = current_bread.start_at.to_i - @conflict.start_at.to_i
+        new_time = in_seconds(:min, 20)-diff.to_i
+        new_time = new_time + in_seconds(:min, 2)
+      when check_pans(current_bread, dest, pan_count) && !check_oven(current_bread, dest) && !check_starts(current_bread, dest)
+        new_time = (@conflict.done_at.to_i - current_bread.pan_at.to_i) + in_seconds(:min, 2)
+        new_time
+      else
+        in_seconds(:min, 20)
+    end
+  end
+
+  def run_equipment_checks(current_bread, current_value, dest, pan_count, inc)
+    if current_value == current_bread.bake_at && check_oven(current_bread, dest)
+      count = 0
+      while dest.has_key?((current_value + count)) || (check_oven(current_bread, dest)) || check_starts(current_bread, dest)
+        count += inc
+        add_count(check, count, inc)
+      end
+    elsif current_value != current_bread.bake_at && !(dest.has_key?(current_value) && !dest[current_value].include?(current_bread)) && check_oven(current_bread, dest)
+      count = 0
+      while check_oven(current_bread, dest)
+        count += inc
+        add_count(current_bread, count, inc)
+      end
+    elsif !check_oven(current_bread, dest) && check_starts(current_bread, dest)
+      count = 0
+      while check_starts(current_bread, dest)
+        count += inc
+        add_count(current_bread, count, inc)
+      end
+    elsif check_pans(current_bread, dest, pan_count) && !check_oven(current_bread, dest) && !check_starts(current_bread, dest)
+      count = 0
+      while check_pans(current_bread, dest, pan_count)
+        count += inc
+        add_count(current_bread, count, inc)
+      end
+    else
+      count = 0
+      while dest.has_key?((current_value + count))
+        count += inc
+      end
+      add_count(current_bread, count, inc)
+    end
+  end 
+
+  def check_new_values(current_bread, current_value, pan_count, dest)
+    pot_vals = [current_bread.start_at, current_bread.pan_at, current_bread.done_at, current_bread.bake_at] #bake_at last, to ensure no oven conflicts
+    pot_vals.delete(current_value)
+    pot_vals.each do |b|
+      orig = b
+      if b == nil
+        next
+      end
+      if (dest.has_key?(b) && !dest[b][0].include?(current_bread.name)) || check_oven(current_bread, dest) || check_starts(current_bread, dest) || check_pans(current_bread, dest, pan_count) then check_against_times(dest, pan_count, b)
+      end
+    end
+  end
  
   def in_seconds(type, number)
     case type
@@ -121,6 +237,7 @@ class Bread
    
   def add_count(bread, count, inc)
     bread.start_at += count
+    bread.pan_at += count unless bread.need_pan == false
     bread.bake_at += count
     bread.done_at += count
     inc = in_seconds(:min, 2)
@@ -141,10 +258,32 @@ class Bread
     return false
   end
 
+  def check_pans(current, dest_collection, pan_num) # Ensures no pan overlap
+    @conflict = nil
+    pan_track = []
+    if !dest_collection.empty? && current.need_pan != false
+      pan_used = 0
+      dest_collection.each do |k, v|
+        if v[1].pan_at < current.pan_at && current.pan_at < v[1].done_at
+          pan_used += v[1].loaves unless v[1].need_pan == false
+          pan_track.push([v[1].done_at, v[1]]) unless v[1].need_pan == false
+        end
+        if pan_used + current.loaves > pan_num || pan_used == pan_num
+          pan_track.sort!
+          pan_track.reverse!
+          @conflict = pan_track[0][1]
+          return true
+        end
+      end
+    end
+    return false
+  end
+
   def check_starts(current, dest_collection) # Ensures 20 minute prep time for each bread;
     if !dest_collection.empty?
       dest_collection.each do |k, v|
         diff = current.start_at-v[1].start_at
+        diff = diff.to_f.abs
         if diff > 0
           if diff.to_i < in_seconds(:min, 20)
             @conflict = v[1]

@@ -9,7 +9,7 @@ require 'lib/BreadClass.rb'
 
 class BreadCalc
 
-  attr_accessor :bread_list, :bake_day, :loaf_count, :store_time, :alt_name
+  attr_accessor :bread_list, :bake_day, :loaf_count, :store_time, :alt_name, :pans
 
   def initialize(date, hour, minute, desc = nil)
     @bake_day = date
@@ -18,6 +18,7 @@ class BreadCalc
     @sched_time = Time.local(@bake_day.year, @bake_day.month, @bake_day.day, @start_hour, @start_min, 0)
     @store_time = @sched_time
     @alt_name = desc
+    @pans = 0
     @bread_list = []
     @rise_list = []
     @bake_list = []
@@ -51,28 +52,70 @@ class BreadCalc
     end
 
     bread_count = ask("How many breads will you be #{add_make}?", Integer)
+    
+    case menu
+      when /main/i
+        @pans = ask("And how many loaf pans do you have?", Integer)
+      when /edit/i
+        do_pans = agree("You are currently using #{@pans} loaf pans.  Would you like to change this?")
+        if do_pans == true
+          @pans = ask("How many loaf pans do you have?", Integer)
+        end
+      end
+
     sleep(0.1); puts""
 
     while i < bread_count.to_i
+      need_pan = false
+      pan_rise = 0
       case r
         when 0
-          puts "What is the name of your first#{add_or} bread?"
+          name = ask("What is the name of your first#{add_or} bread?", String)
           r += 1
         else
-          puts "What is the name of your next bread?"
+          name = ask("What is the name of your next bread?", String)
       end
 
-      name = ask("", String)
-  
-      sleep(0.1); puts""
+      sleep(0.1); puts ""
       rise = ask("For how long, in minutes, does it rise?", Integer)
-      sleep(0.1); puts""
+      sleep(0.1); puts ""
+      pan = agree("Does it rise in the pan at all?")
+      sleep(0.1); puts ""
+      if pan == true
+        pan_rise = ask("For how long?", Integer)
+        need_pan = true
+        sleep(0.1); puts ""
+        until pan_rise < rise  
+          pan_rise = ask("For how long?", Integer)
+          sleep(0.1); puts ""
+        end
+      else 
+        pan_rise = 0
+      end
       bake = ask("For how long does it bake?", Integer)
-      sleep(0.1); puts""
-      loaves = ask("And how many loaves do you expect from this recipe?", Integer)
+      sleep(0.1); puts ""
+      p = 0
+      until p == 1
+        intro = case p
+          when -1
+            "H"
+          when 0
+            "And h"
+          end
+        loaves = ask("#{intro}ow many loaves do you expect from this recipe?", Integer)
+        sleep(0.1); puts ""
+        if loaves > @pans && pan == true
+          puts "That is more loaves than you have pans!"
+          p = -1
+        else
+          p = 1
+        end
+      end
+  
+
       
       begin
-        @bread_list.push(Bread.new(name, rise, bake, loaves))
+        @bread_list.push(Bread.new(name, rise, pan_rise, bake, loaves, need_pan))
       rescue SyntaxError => e
         puts "*************EXCEPTION RAISED*************"
         puts "Oops!  Syntax Error when creating baking day:"
@@ -309,15 +352,16 @@ class BreadCalc
     @interior1 = @interior1.sort.reverse #Currently sorting for total.
 
     @longest_rise.start_at = @sched_time
-    @longest_rise.bake_at = @sched_time + in_seconds(:min, (@longest_rise.rise))
-    @longest_rise.done_at = @sched_time + in_seconds(:min, (@longest_rise.total))
+    @longest_rise.pan_at = @sched_time + in_seconds(:min, @longest_rise.int_rise) unless @longest_rise.pan_rise == 0
+    @longest_rise.bake_at = @sched_time + in_seconds(:min, @longest_rise.rise)
+    @longest_rise.done_at = @sched_time + in_seconds(:min, @longest_rise.total)
 
     unless @interior1.empty?
       @long_interior = @interior1[0]
       @sched_time += in_seconds(:min, 20)
 
       @long_interior.start_at = @sched_time
-
+      @long_interior.pan_at = @sched_time + in_seconds(:min, @long_interior.int_rise) unless @longest_rise.pan_rise == 0
       @long_interior.bake_at = @sched_time + in_seconds(:min, @long_interior.rise)
       @long_interior.done_at = @sched_time + in_seconds(:min, @long_interior.total)
 
@@ -326,9 +370,10 @@ class BreadCalc
       @interior1.delete_at(0)
 
       @interior1.each do |k|
-        k.start_at = @sched_time - in_seconds(:min, (k.rise))
+        k.start_at = @sched_time - in_seconds(:min, k.rise)
+        k.pan_at = k.start_at + in_seconds(:min, k.int_rise) unless k.pan_rise == 0
         k.bake_at = @sched_time + in_seconds(:min, 2)
-        @sched_time += in_seconds(:min, (k.bake))
+        @sched_time += in_seconds(:min, k.bake)
         k.done_at = @sched_time += in_seconds(:min, 2)
       end
     end
@@ -338,9 +383,10 @@ class BreadCalc
       starting = @longest_rise.done_at
 
       @interior2.each do |k|
-        k.start_at = starting - in_seconds(:min, (k.rise)) # 20 to account for prep time before rise
+        k.start_at = starting - in_seconds(:min, k.rise) # 20 to account for prep time before rise
+        k.pan_at = starting - in_seconds(:min, k.int_rise)
         k.bake_at = starting + in_seconds(:min, 2) # 2 to account for time to switch pans in oven
-        starting += in_seconds(:min, (k.bake+2))
+        starting += in_seconds(:min, k.bake+2)
         k.done_at = starting
       end
     end
@@ -370,8 +416,17 @@ class BreadCalc
         @final_sched.delete(k)
         next
       end
-      k.check_against_times(@all_times, [k.start_at, k.bake_at, k.done_at]) {@all_times[k.start_at]=["Start #{k.name}", k]; @all_times[k.bake_at]=["Put #{k.name} into the oven", k]; @all_times[k.done_at]=["Take #{k.name} out of the oven", k]}
+      k.check_against_times(@all_times, @pans, [k.start_at, k.pan_at, k.bake_at, k.done_at]) do
+        @all_times[k.start_at] = ["Start #{k.name}", k]
+        if k.pan_rise != 0
+          @all_times[k.pan_at] = ["Put #{k.name} into the loaf pan", k]
+        end
+        @all_times[k.bake_at] = ["Put #{k.name} into the oven", k]
+        @all_times[k.done_at] = ["Take #{k.name} out of the oven", k]
+      end
+      @all_times = k.check_first_bread(@all_times, @pans, @store_time)
     end
+
   end
   
   def in_seconds(type, number)
