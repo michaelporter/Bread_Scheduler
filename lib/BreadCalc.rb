@@ -485,8 +485,6 @@ class BreadCalc
       end
       @all_times = k.check_first_bread(@all_times, @pans, @store_time)
     end
-    ap @all_times
-
   end
   
   def in_seconds(type, number)
