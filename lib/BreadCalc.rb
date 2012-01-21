@@ -18,7 +18,7 @@ class BreadCalc
     @sched_time = Time.local(@bake_day.year, @bake_day.month, @bake_day.day, @start_hour, @start_min, 0)
     rescue ArgumentError => e
       puts "*************EXCEPTION RAISED*************"
-      puts "Oops!  The time input does not fit standard time notation!"
+      puts "Oops!  The time input does not fit within reason!"
       puts "#{e}"
       puts "EXITING PROGRAM"
       Process.exit
