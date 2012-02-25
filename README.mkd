@@ -7,14 +7,14 @@ Just make bin/Bread_Scheduler.rb into an executable and run in your command line
 Mike's Baking Scheduler v1.0
 
 What it can do:
-  You give it your starting time, and the rise and baking times for each bread you want to bake on the given day, and it'll give you the most efficient schedule it can manage for that day.
-  Takes into account the number of loaf pans and ovens you have access to.
-  Accounts for kitchen temperature's effect on rise times.
-  Easy to edit baking days' start times and all bread info.
+  <br />You give it your starting time, and the rise and baking times for each bread you want to bake on the given day, and it'll give you the most efficient schedule it can manage for that day.
+  <br />Takes into account the number of loaf pans and ovens you have access to.
+  <br />Accounts for kitchen temperature's effect on rise times.
+  <br />Easy to edit baking days' start times and all bread info.
   
 What it can't do (yet):
-  Save baking schedules.
-  Things I haven't thought of yet.
+  <br />Save baking schedules.
+  <br />Things I haven't thought of yet.
   
   
 Enjoy!
