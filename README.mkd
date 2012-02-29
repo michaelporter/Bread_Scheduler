@@ -20,3 +20,5 @@ What it can't do (yet):
 Enjoy!
 
 Questions, comments, want to get involved?  Email: michaelporter.0988@gmail.com
+
+Licensed under GPL
