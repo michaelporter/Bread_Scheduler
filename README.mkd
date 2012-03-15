@@ -16,10 +16,12 @@ What it can't do (yet):
   <br />-Save baking schedules.
   <br />-Things I haven't thought of yet.
   
+Future of the Project:
+  <br />-A web application that allows for the creation of user accounts, stored breads, and easy sharing of recipes off-site.
   
 Enjoy!
 
-Questions, comments, want to get involved?  Email: michaelporter.0988@gmail.com
+Questions, comments, want to get involved?  Contact me here: michaelporter.0988@gmail.com
 
 Licensed under GPL (v3)
 
