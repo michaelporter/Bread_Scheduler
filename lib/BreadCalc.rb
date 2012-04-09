@@ -109,7 +109,7 @@ class BreadCalc
 
   private
 
-  def gather_conditions(menu_type)
+  def gather_conditions(menu_type)               # Gets number of breads, pans, and kitchen temp (optional)
     add_make = ""
     case menu_type
       when /edit/i
@@ -144,12 +144,12 @@ class BreadCalc
     end
   end
   
-  def gather_breads(menu_type)
-    i = 0
-    while i < @bread_count.to_i
-      this_many = 0
+  def gather_breads(menu_type)           # Gets each breads' info and makes the bread objects
+    this_many = 0
+    while this_many < @bread_count.to_i
+      
       name, rise, bake, need_pan, pan_rise, loaves = get_bread_info(this_many, menu_type)
-      this_many += 1
+      
 
       begin
         @bread_list.push(Bread.new(name, rise, bake, loaves, pan_rise, need_pan))
@@ -165,14 +165,14 @@ class BreadCalc
         puts "EXITING PROGRAM"
         Process.exit
       end
-      i+=1
+      this_many += 1
       puts ""; sleep(0.2); puts "Thanks!"; puts ""; sleep(0.2)
     end
     adjust_for_temp(@temp)
     count_loaves
   end
 
-  def get_bread_info(how_many, menu_type)
+  def get_bread_info(how_many, menu_type)   # Derp
     add_or = ""
     case menu_type
       when /edit/i
@@ -185,8 +185,8 @@ class BreadCalc
     pan_rise = 0
     loaves = 0
     case how_many
-      when how_many == 0
-        name = ask("What is the name of your first#{add_or} bread?", String)
+      when 0
+        name = ask("What is the name of your first#{add_or} bread?", String)   # ask() is from the Highline gem; very handy
         how_many += 1
       else
         name = ask("What is the name of your next bread?", String)
@@ -227,8 +227,9 @@ class BreadCalc
     return name, rise, bake, need_pan, pan_rise, loaves
   end
 
-  def adjust_for_temp(temp)    # Estimates for now, based on colloquial knowledge, 
-                               # pending discovery of more accurate claims
+  def adjust_for_temp(temp)    # Estimates for now, based on colloquial knowledge, found on several bread blogs,
+                               # pending discovery of more accurate claims; everything points to rising being quite complicated,
+                               # but these measures have worked very accurately for me so far in practice.
     unless temp == nil
       @bread_list.each do |k|
         if temp < 70
@@ -245,13 +246,56 @@ class BreadCalc
       end
     end
   end
+
+  def make_hash(which_hash, which_value)    # Gathers all related times for each bread into a hash
+    @bread_list.each do |k|
+      key = case which_value
+        when :rise
+          k.rise
+        when :bake
+          k.bake
+        when :total
+          k.total
+        end
+      if which_hash.has_key?(key) then key += 1
+      end
+      which_hash[key] = k     # [value => object_id, value2 => object_2_id, etc...]
+    end
+  end
   
   def find_longest
-    find_longest_rise
-    find_longest_bake
-    find_longest_total
+    make_hash(@rise_hash, :rise)
+    make_hash(@bake_hash, :bake)
+    make_hash(@total_hash, :total)
+
+    # Find the Longest Rise Time
+    @longest_rise = @rise_hash.sort[@rise_hash.sort.length-1][1]
+    @to_delete = @longest_rise                                       # Removes the longest rise from this because it will not
+                                                                     # be scheduled like the rest; it provides the relative
+                                                                     # time marker around which other breads will be scheduled
+    @rise_hash.delete(@rise_hash.index(@to_delete))
+
+    # Find the Longest Bake Time
+    @longest_bake = @bake_hash.sort[0][1]    # I don't do anything with this yet, so it's not protected from the longest rise
+
+    # Find the Longest Total Time
+    @total_hash.delete(@total_hash.index(@to_delete))
+
+    longest = @total_hash.sort[@total_hash.sort.length-1][1] unless @total_hash.empty?
+    @longest_total = longest unless (longest == @to_delete || @total_hash.empty?)        # Protects @longest_total from taking the
+                                                                                         # longest rise as it's value
+
+    #@tot_sort = @total_hash.sort
+
+    #@tot_name = Array.new
+    #@tot_sort.each do |k|
+    #  @tot_name.push(k[1])
+    #end
+    @longest_total   # This shouldn't be necessary
+
   end
-    
+
+=begin    
   def find_longest_rise
     make_hash(@rise_hash, :rise)
     @longest_rise = @rise_hash.sort[@rise_hash.sort.length-1][1]
@@ -280,22 +324,7 @@ class BreadCalc
     end
     @longest_total
   end
-
-  def make_hash(hash, which_value)
-    @bread_list.each do |k|
-      key = case which_value
-        when :rise
-          k.rise
-        when :bake
-          k.bake
-        when :total
-          k.total
-        end
-      if hash.has_key?(key) then key += 1
-      end
-      hash[key] = k
-    end
-  end
+=end
 
   def reset(collection)
     col = collection
@@ -340,7 +369,7 @@ class BreadCalc
     @longest_bake = nil
     @longest_total = nil
 
-    @sched_time = Time.local(@bake_day.year, @bake_day.month, @bake_day.day, @start_hour, @start_min, 0)
+    @sched_time = Time.local(@bake_day.year, @bake_day.month, @bake_day.day, @start_hour, @start_min, 0)  # Sets time to original values
   end
 
   def dot_count(current, next_one) # Places one dot per line for every span of 35 minutes between
@@ -349,7 +378,6 @@ class BreadCalc
     count = (diff/in_seconds(:min, 35)).to_i
     count.times {puts "~"}
   end
-
 
   def interior_scheduling
     make_interiors
@@ -361,7 +389,10 @@ class BreadCalc
   def make_interiors # Gathers the breads whose total time together fits in the longest ones' rise times;
                        # It first gathers the breads that fit within the time of the longest of all into 
                        # @interior1; the remaining breads are gathered into @interior2;
-    reverse_tot = @tot_sort.reverse
+
+    #@tot_sort = @total_hash.sort
+    #reverse_tot = @tot_sort.reverse
+    reverse_tot = @total_hash.sort.reverse
     #[[tot, obj], [tot2, obj2], etc ]
 
     @interior_time = 0
