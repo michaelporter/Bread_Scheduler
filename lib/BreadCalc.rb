@@ -2,7 +2,6 @@ require 'lib/BreadClass.rb'
 
 # Current Assumptions
   # 20-minute Prep Time before Rise begins
-  # All temperature and environment influence on the Rise time. (aka, it is always summertime in the kitchen)
   # 1 oven
   # Consolidated oven-time will mark proper scheduling, rather than breads-per-hour
 
@@ -148,9 +147,9 @@ class BreadCalc
   def gather_breads(menu_type)
     i = 0
     while i < @bread_count.to_i
-      r = 0
-      name, rise, bake, need_pan, pan_rise, loaves = get_bread_info(r, menu_type)
-      r += 1
+      this_many = 0
+      name, rise, bake, need_pan, pan_rise, loaves = get_bread_info(this_many, menu_type)
+      this_many += 1
 
       begin
         @bread_list.push(Bread.new(name, rise, bake, loaves, pan_rise, need_pan))
@@ -173,7 +172,7 @@ class BreadCalc
     count_loaves
   end
 
-  def get_bread_info(r, menu_type)
+  def get_bread_info(how_many, menu_type)
     add_or = ""
     case menu_type
       when /edit/i
@@ -185,10 +184,10 @@ class BreadCalc
     need_pan = false
     pan_rise = 0
     loaves = 0
-    case r
-      when 0
+    case how_many
+      when how_many == 0
         name = ask("What is the name of your first#{add_or} bread?", String)
-        r += 1
+        how_many += 1
       else
         name = ask("What is the name of your next bread?", String)
     end
