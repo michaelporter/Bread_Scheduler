@@ -172,7 +172,7 @@ class Bread
         new_time = in_seconds(:min, 20)-diff.to_i
         new_time = new_time + in_seconds(:min, 2)
       when check_pans(current_bread, dest, pan_count) && !check_oven(current_bread, dest) && !check_starts(current_bread, dest)
-        ap @conflict
+        #ap @conflict
         unless @conflict == nil
           new_time = (@conflict.done_at.to_i - current_bread.pan_at.to_i) + in_seconds(:min, 2)
           new_time
@@ -271,7 +271,7 @@ class Bread
           if v[1].pan_at < current.pan_at && current.pan_at < v[1].done_at
             pan_used += v[1].loaves
             pan_track.push([v[1].done_at, v[1]])
-            ap pan_track
+            #ap pan_track
           end
         end
         if pan_used + current.loaves > pan_num || pan_used == pan_num

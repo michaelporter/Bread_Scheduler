@@ -146,7 +146,7 @@ class BreadMenus
     puts "\n\n"; sleep(0.5)
 
     an = agree("Return to #{which}menu?") #by default continues on with loop if answer is positive;
-    
+=begin
     if an == false && @menu == :main
       say "Good-bye, and thank you!"
       Process.exit
@@ -167,6 +167,22 @@ class BreadMenus
       main_menu
     elsif an == false && @menu == :save
       main_menu
+    end
+=end
+    if an == false && @menu == :main
+      say "Good-bye, and thank you!"
+      Process.exit
+    elsif (an == false && @menu == :edit) || (an == false && @menu == :day) || (an == false && @menu == :save)
+      main_menu
+    elsif (an == false && @menu == :delete) || (an == false && @menu == :bread)
+      edit_menu(check_for_day)
+    elsif an == true && @menu == :delete && !@breads.has_key?(@which_day)
+      puts "This day is now empty, and has been deleted."
+      puts "-----------------*********-----------------"
+      sleep(0.2)
+      main_menu
+    elsif an == false && @menu == :data
+      bread_menu
     end
   end
   
