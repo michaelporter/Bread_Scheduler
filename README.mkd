@@ -1,6 +1,6 @@
 Usage:
 
-Just make bin/Bread_Scheduler.rb into an executable and run in your command line.  It'll take you the rest of the way.
+Make bin/Bread_Scheduler.rb executable and run in your terminal.  It'll take you the rest of the way.
 
 
 
@@ -13,15 +13,13 @@ What it can do:
   <br />-Easy to edit baking days' start times and all bread info.
   
 What it can't do (yet):
-  <br />-Save baking schedules.
-  <br />-Things I haven't thought of yet.
+  <br />-Save baking schedules...or breads...(coming soonish though)...
   
 Future of the Project:
   <br />-A web application that allows for the creation of user accounts, stored breads, and easy sharing of recipes off-site.
-  
 Enjoy!
 
-Questions, comments, want to get involved?  Contact me here: michaelporter.0988@gmail.com
+Questions, comments?  Contact me here: designmporter@gmail.com
 
 Licensed under GPL (v3)
 
