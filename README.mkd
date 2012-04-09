@@ -19,6 +19,11 @@ Future of the Project:
   <br />-A web application that allows for the creation of user accounts, stored breads, and easy sharing of recipes off-site.
 Enjoy!
 
+Dependencies:
+  <br />-Rubygems
+  <br />-Highline v 1.5.0
+  <br />-ap (awesome_print, for now)
+
 Questions, comments?  Contact me here: designmporter@gmail.com
 
 Licensed under GPL (v3)
