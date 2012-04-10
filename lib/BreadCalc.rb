@@ -285,46 +285,7 @@ class BreadCalc
     @longest_total = longest unless (longest == @to_delete || @total_hash.empty?)        # Protects @longest_total from taking the
                                                                                          # longest rise as it's value
 
-    #@tot_sort = @total_hash.sort
-
-    #@tot_name = Array.new
-    #@tot_sort.each do |k|
-    #  @tot_name.push(k[1])
-    #end
-    @longest_total   # This shouldn't be necessary
-
   end
-
-=begin    
-  def find_longest_rise
-    make_hash(@rise_hash, :rise)
-    @longest_rise = @rise_hash.sort[@rise_hash.sort.length-1][1]
-    @to_delete = @longest_rise
-    @rise_hash.delete(@rise_hash.index(@to_delete))
-  end
-  
-  def find_longest_bake
-    make_hash(@bake_hash, :bake)
-    
-    @longest_bake = @bake_hash.sort[0][1]
-  end
-  
-  def find_longest_total
-    make_hash(@total_hash, :total)
-    
-    @total_hash.delete(@total_hash.index(@to_delete))
-
-    longest = @total_hash.sort[@total_hash.sort.length-1][1] unless @total_hash.empty?
-    @longest_total = longest unless (longest == @to_delete || @total_hash.empty?)
-
-    @tot_sort = @total_hash.sort
-    @tot_name = Array.new
-    @tot_sort.each do |k|
-      @tot_name.push(k[1])
-    end
-    @longest_total
-  end
-=end
 
   def reset(collection)
     col = collection
@@ -390,8 +351,6 @@ class BreadCalc
                        # It first gathers the breads that fit within the time of the longest of all into 
                        # @interior1; the remaining breads are gathered into @interior2;
 
-    #@tot_sort = @total_hash.sort
-    #reverse_tot = @tot_sort.reverse
     reverse_tot = @total_hash.sort.reverse
     #[[tot, obj], [tot2, obj2], etc ]
 
@@ -430,12 +389,15 @@ class BreadCalc
   end
   
   def time_interiors            # Assigns times to each bread's starting, baking, and finishing, according to their
-                                # order from the start time. @interior1 searches for a longest bread within itself,
-                                # which is set then to begin just after the longest-rising bread. The remaining
-                                # breads within @interior1 get their start time by subtracting their rise time 
+                                # order from the start time. @interior1 searches for a longest bread within itself (-> @long_interior),
+                                # which is set then to begin just after the longest-rising bread (grabbed before in find_longest.
+                                # The remaining breads within @interior1 get their start time by subtracting their rise time 
                                 # from the end time of @long_interior, so they bake when that one finishes, and so
-                                # on. This last part of the process process repeats for each bread in @interior2,
+                                # on. This last part of the process repeats for each bread in @interior2,
                                 # except instead of @long_interior as the base, it is @longest_rise;
+                                # This should result in two fairly loaded periods of near-consistent baking, when loaf pans
+                                # are infinite, or in great enough quantity that sharing them is never an issue;
+
     @interior1 = @interior1.sort.reverse #Currently sorting for total.
 
     @longest_rise.start_at = @sched_time
@@ -483,7 +445,8 @@ class BreadCalc
     @final_sched = []
  
     @final_sched.push(@longest_rise)
-    @final_sched.push(@long_interior) unless @long_interior == ""
+    @final_sched.push(@long_interior) unless @long_interior == ""  # In case I'm only doing 1 or two long breads, or there was 
+                                                                   # for some other reason no bread to fill this value
 
     @interior1.each do |k|
      @final_sched.push(k)

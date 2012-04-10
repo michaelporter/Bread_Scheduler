@@ -146,29 +146,7 @@ class BreadMenus
     puts "\n\n"; sleep(0.5)
 
     an = agree("Return to #{which}menu?") #by default continues on with loop if answer is positive;
-=begin
-    if an == false && @menu == :main
-      say "Good-bye, and thank you!"
-      Process.exit
-    elsif an == false && @menu == :edit
-      main_menu
-    elsif an == false && @menu == :delete
-      edit_menu(check_for_day)
-    elsif an == true && @menu == :delete && !@breads.has_key?(@which_day)
-      puts "This day is now empty, and has been deleted."
-      puts "-----------------*********-----------------"
-      sleep(0.2)
-      main_menu
-    elsif an == false && @menu == :bread
-      edit_menu(check_for_day)
-    elsif an == false && @menu == :data
-      bread_menu
-    elsif an == false && @menu == :day
-      main_menu
-    elsif an == false && @menu == :save
-      main_menu
-    end
-=end
+
     if an == false && @menu == :main
       say "Good-bye, and thank you!"
       Process.exit
@@ -198,7 +176,7 @@ class BreadMenus
     else
       day_menu
     
-      if @breads.has_key?(@which_day)
+      if @breads.has_key?(@which_day)               # This way of using @which_day is sloppy...possibly very confusing;
         @day_obj.publish
       else
         puts "Sorry, could not find that list."
@@ -206,7 +184,7 @@ class BreadMenus
     end
   end
     
-  def check_for_day # Manages access to single baking days for editing;
+  def check_for_day                                 # Manages access to single baking days for editing;
     if @breads.length == 1
       @which_day = @breads.keys[0]
       @day_obj = @breads[@breads.keys[0]]
