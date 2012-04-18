@@ -1,4 +1,4 @@
-#!/usr/bin/rvm-auto-ruby
+#!/home/michael/.rvm/rubies/ruby-1.8.7-p358/bin/ruby
 
 require 'lib/BasicMenu.rb'
 require 'rubygems'

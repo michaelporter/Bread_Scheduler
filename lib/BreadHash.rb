@@ -206,7 +206,7 @@ class DayCollector < Hash
     return hr, min
   end
 
-  def stringify_alt(day)
+  def stringify_alt(day)     # Because some alt's are nil by default ( I should probably fix this part rather than write a new method...)
     if self[day].alt_name != (nil|false)
       alt = ", #{self[day].alt_name}"
     else

@@ -182,7 +182,7 @@ class Bread
     end
   end
 
-  def run_equipment_checks(current_bread, current_value, dest, pan_count, inc)
+  def run_equipment_checks(current_bread, current_value, dest, pan_count, inc)   # I bet a lot of this logic could be abstracted or otherwise refactored
     if current_value == current_bread.bake_at && check_oven(current_bread, dest)
       count = 0
       while dest.has_key?((current_value + count)) || (check_oven(current_bread, dest)) || check_starts(current_bread, dest)
