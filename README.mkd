@@ -1,6 +1,6 @@
 Usage:
 
-Make bin/Bread_Scheduler.rb executable and run in your terminal.  It'll take you the rest of the way.
+Make bin/Bread_Scheduler.rb executable and run in your terminal (you'll also probably need to change the shebang path to point to your ruby install).  It'll take you the rest of the way.
 
 
 
