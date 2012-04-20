@@ -130,7 +130,13 @@ class DayCollector < Hash
  def get_day_info(change = false, old_obj = nil) # new day--false; existing day--true
    check = false
    until check == true
-     date_input = ask("What day will you be baking? (Please enter 'MM/DD/YYYY')", Date) {|q| q.validate = /(([0-1]?[0-9]{1})|([2]{1}[0-4]{1}))\/(([0-2]?[0-9]{1})|([3]{1}[0-1]{1}))\/([2]{1}[0]{1}[0-9]{2})/}; sleep(0.05); puts ""
+     date_input = ask("What day will you be baking? (Please enter 'MM/DD/YYYY')", Date) do |q|
+      q.default = Date.today.to_s;
+      q.validate = lambda { |p| Date.parse(p) >= Date.today };
+      q.responses[:not_valid] = "Enter a date greater than or equal to today"
+     end
+
+     sleep(0.05); puts ""
   
      time_input = ask("What time will you start? Please enter in 24-hour format (hour:minute)", String){|q| q.validate = /(([1]?[0-9]{1})|([2][0-4]{1})):([0-5]{1}[0-9]{1})/}; sleep(0.05); puts ""
   
