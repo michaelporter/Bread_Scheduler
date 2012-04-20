@@ -23,6 +23,7 @@ Dependencies:
   <br />-Rubygems
   <br />-Highline v 1.5.0
   <br />-ap (awesome_print, for now)
+  <br />-crack
 
 Questions, comments?  Contact me here: designmporter@gmail.com
 
