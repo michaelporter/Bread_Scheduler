@@ -1,5 +1,7 @@
 require 'rubygems'
-require 'ap'
+gem 'awesome_print', '= 1.0.2'
+require 'awesome_print'
+
 class Bread
   attr_accessor :name, :rise, :int_rise, :pan_rise, :need_pan, :bake, :total, :loaves, :start_at, :pan_at, :bake_at, :done_at
   
@@ -108,8 +110,8 @@ class Bread
       dest[check.done_at] = ["Take #{check.name} out of the oven", check]
 
       dest_earliest = dest.sort[0][0]
-      diff = dest_earliest.to_i - start_time.to_i
-
+      diff = dest_earliest.to_i - start_time.to_i   # resets the whole schedule to the start time, in
+      												# case the first bread's start time was shifted
       update_all_breads_times(dest, diff)
     end
     return dest
@@ -127,7 +129,7 @@ class Bread
         breads.push(va[1])
       end
     end
-    breads.each do |bread|
+    breads.each do |bread|                  # This can be refactored
       val = dest.values_at(bread.start_at)
       dest.delete(bread.start_at)
       bread.start_at -= diff
@@ -152,7 +154,7 @@ class Bread
     end
   end
 
-  def get_inc(current_bread, current_value, dest, pan_count)
+  def get_inc(current_bread, current_value, dest, pan_count)   # sets time to increment when conflicts occur
     case
       when current_value == current_bread.bake_at && check_oven(current_bread, dest)
         if @conflict.bake_at < current_bread.bake_at && current_bread.bake_at < @conflict.done_at
@@ -174,7 +176,7 @@ class Bread
       when check_pans(current_bread, dest, pan_count) && !check_oven(current_bread, dest) && !check_starts(current_bread, dest)
         #ap @conflict
         unless @conflict == nil
-          new_time = (@conflict.done_at.to_i - current_bread.pan_at.to_i) + in_seconds(:min, 2)
+          new_time = (@conflict.done_at.to_i - current_bread.pan_at.to_i) + in_seconds(:min, 2)  # this may be a big issue for the loaf pans; is this really being the most conservative?  This relies on @conflict being set correctly, to account for more than 2 pans.
           new_time
         end
       else
@@ -261,24 +263,28 @@ class Bread
     return false
   end
 
-  def check_pans(current, dest_collection, pan_num) # Ensures no pan overlap
+  def check_pans(current, dest_collection, pan_num) # Ensures no pan overlap; Returns False if no conflicts
     @conflict = nil
     pan_track = []
-    if !dest_collection.empty? && current.need_pan != false
+    if !dest_collection.empty? && current.need_pan != false   # shouldn't need this false here; 
+	    													  # was there a reason?
       pan_used = 0
       dest_collection.each do |k, v|
         unless v[1].need_pan == false || v[1] == current
-          if v[1].pan_at < current.pan_at && current.pan_at < v[1].done_at
+          if v[1].pan_at < current.pan_at && current.pan_at < v[1].done_at  # checks other bread's needs at the
+          																	# time when the current bread needs
+          																	# the pans
             pan_used += v[1].loaves
             pan_track.push([v[1].done_at, v[1]])
-            #ap pan_track
+            ap pan_track
+            puts "-----"
           end
         end
-        if pan_used + current.loaves > pan_num || pan_used == pan_num
-          pan_track.sort!
+        if pan_used + current.loaves > pan_num || pan_used == pan_num  # if we are over, or already full
+          pan_track.sort!  # should be in the unless statement yes?  Will check on this
           pan_track.reverse!
           unless pan_track.empty?
-            @conflict = pan_track[0][1]
+            @conflict = pan_track[0][1]  # this grabs the latest bread obj in the schedule
             return true
           end
         end

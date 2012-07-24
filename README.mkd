@@ -1,6 +1,9 @@
+NOTE: Scheduling with more than 2 pans, either user-available or bread-necessitated, currently produces unexpected results.
+      There is no current timeframe for fixing this issue.
+
 Usage:
 
-Make bin/Bread_Scheduler.rb executable and run in your terminal.  It'll take you the rest of the way.
+Make bin/Bread_Scheduler.rb executable and run in your terminal (you'll also probably need to change the shebang path to point to your ruby install).  It'll take you the rest of the way.
 
 
 
@@ -8,7 +11,7 @@ Mike's Baking Scheduler v1.0
 
 What it can do:
   <br />-You give it your starting time, and the rise and baking times for each bread you want to bake on the given day, and it'll give you the most efficient schedule it can manage for that day.
-  <br />-Takes into account the number of loaf pans and ovens you have access to.
+  <br />-Takes into account the number of loaf pans and ovens you have access to.  (sometimes... :) )
   <br />-Accounts for kitchen temperature's effect on rise times.
   <br />-Easy to edit baking days' start times and all bread info.
   
@@ -22,7 +25,12 @@ Enjoy!
 Dependencies:
   <br />-Rubygems
   <br />-Highline v 1.5.0
-  <br />-ap (awesome_print, for now)
+  <br />-awesome_print v 1.0.2
+
+Current Issues:
+  <br />-Several months on, this code makes my eyes bleed.  Improvements (where it really does matter) forthcoming.
+  <br />-The pan_check method is not the most effective;
+  <br />-Sometimes, a bread will be shot to the end of the schedule, starting after all others are finished, to no real purpose due to the incremented time adjustments, or due to the initial scheduling divisions; this is being worked on, but for now, common sense will typically serve you best if you see something you don't think is right.  (Please feel free to send along the input that produced the error, as well!  RSpec tests are coming, but even those can't check everything. :P )
 
 Questions, comments?  Contact me here: designmporter@gmail.com
 

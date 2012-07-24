@@ -217,7 +217,9 @@ class BreadCalc
           "And h"
         end
       loaves = ask("#{intro}ow many loaves do you expect from this recipe?", Integer); sleep(0.1); puts ""
-      if loaves > @pans && pan == true
+      if loaves > @pans && pan == true                    # This should really just become conditional on
+      													  # whether the bread has pans; how many recipes use
+      													  # both pans and stone?
         puts "That is more loaves than you have pans!"
         p = -1
       else

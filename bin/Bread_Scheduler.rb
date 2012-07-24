@@ -1,4 +1,6 @@
-#!/home/michael/.rvm/rubies/ruby-1.8.7-p358/bin/ruby
+#!/usr/bin/env ruby
+
+$: << File.join(File.dirname(__FILE__), "/..")
 
 require 'lib/BasicMenu.rb'
 require 'rubygems'
