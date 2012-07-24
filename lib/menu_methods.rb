@@ -36,16 +36,16 @@ module MenuMethods
       say "Good-bye, and thank you!"
       Process.exit
     elsif (an == false && @menu == :edit) || (an == false && @menu == :day) || (an == false && @menu == :save)
-      Menus::MainMenu.new(@which_day, @breads)
+      Menus::MainMenu.new(@which_day, @breads).display_options
     elsif (an == false && @menu == :delete) || (an == false && @menu == :bread)
-      Menus::EditMenu.new(@which_day, @bread, check_for_day)
+      Menus::EditMenu.new(@which_day, @bread, check_for_day).display_options
     elsif an == true && @menu == :delete && !@breads.has_key?(@which_day)
       puts "This day is now empty, and has been deleted."
       puts "-----------------*********-----------------"
       sleep(0.2)
-      Menus::MainMenu.new(@which_day, @breads)
+      Menus::MainMenu.new(@which_day, @breads).display_options
     elsif an == false && @menu == :data
-      Menus::BreadsMenu.new(@which_day, @breads)
+      Menus::BreadsMenu.new(@which_day, @breads).display_options
     end
   end
   
@@ -59,7 +59,7 @@ module MenuMethods
     if @breads.empty?
       puts "No recorded baking schedules."
     else
-      Menus::SchedulesMenu.new(@which_day, @breads)
+      Menus::SchedulesMenu.new(@which_day, @breads).display_options
     
       if @breads.has_key?(@which_day)               # This way of using @which_day is sloppy...possibly very confusing;
         @current_day.publish
@@ -77,7 +77,7 @@ module MenuMethods
       puts "** NOTE: You only have one baking day saved. **"
       puts "\n\n\n\n\n\n\n\n\n\n\n"; sleep(1)
     else
-      Menus::SchedulesMenu.new(@which_day, @breads)
+      Menus::SchedulesMenu.new(@which_day, @breads).display_options
     end
   
     if @breads.has_key?(@which_day)
@@ -89,7 +89,7 @@ module MenuMethods
       else
         puts "\n\nSorry, couldn't find that day!"
       end
-      Menus::MainMenu.new(@which_day, @breads)
+      Menus::MainMenu.new(@which_day, @breads).display_options
     end
   end
 end

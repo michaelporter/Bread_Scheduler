@@ -1,8 +1,11 @@
 require 'rubygems'
 gem 'awesome_print', '= 1.0.2'
 require 'awesome_print'
+require 'lib/time_manipulation.rb'
 
 class Bread
+  include TimeManipulation
+
   attr_accessor :name, :rise, :int_rise, :pan_rise, :need_pan, :bake, :total, :loaves, :start_at, :pan_at, :bake_at, :done_at
   
   def initialize(name, rise_time, bake_time, loaves, pan_rise = 0, need_pan = false)
@@ -228,15 +231,6 @@ class Bread
       end
       if (dest.has_key?(b) && !dest[b][0].include?(current_bread.name)) || check_oven(current_bread, dest) || check_starts(current_bread, dest) || check_pans(current_bread, dest, pan_count) then check_against_times(dest, pan_count, b)
       end
-    end
-  end
- 
-  def in_seconds(type, number)
-    case type
-      when :min
-        number * 60
-      when :hour
-        number * 60 * 60
     end
   end
    

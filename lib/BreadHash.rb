@@ -3,7 +3,9 @@
 
 require 'lib/BreadCalc.rb'
 require 'lib/BreadClass.rb'
-require 'rubygems'
+require 'lib/time_manipulation.rb'
+
+require 'rubygems'   # Do I really need this?  does it not inherit?
 gem 'highline', '= 1.5.0'
 require 'highline/import'
 

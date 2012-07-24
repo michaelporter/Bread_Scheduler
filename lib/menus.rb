@@ -19,8 +19,8 @@ module Menus
         	m.choice(:"New Baking Day" ) {wrapper{@breads.new_day}}
         	m.choice(:"Show All Current Schedules" ) {wrapper{@breads.publish_lists}}
         	m.choice(:"Select a Day to View" ) {wrapper{which_list}}
-        	m.choice(:"Delete A Day" ) {wrapper{SchedulesMenu.new(@which_day, @breads); @breads.delete_day(@which_day)}}
-        	m.choice(:"Edit a Day" ) {wrapper{EditMenu.new(@which_day, @breads)}}
+        	m.choice(:"Delete A Day" ) {wrapper{SchedulesMenu.new(@which_day, @breads).display_options; @breads.delete_day(@which_day)}}
+        	m.choice(:"Edit a Day" ) {wrapper{EditMenu.new(@which_day, @breads).display_options}}
         	m.choice(:"Exit" ) {Process.exit}
       	end
     	end
@@ -50,8 +50,8 @@ module Menus
     	    e.choice(:"View Schedule" ) {wrapper{@current_day.publish}}
     	    e.choice(:"Add a Bread") {wrapper{@breads.add_bread(@which_day)}}
     	    e.choice(:"Delete a Bread" ) {wrapper{delete_menu(@which_day)}}
-    	    e.choice(:"Edit a Bread's Info" ) {wrapper{BreadsMenu.new(@which_day, @breads)}}
-    	    e.choice(:"Return to Main Menu" ) {wrapper{MainMenu.new(@which_day, @breads)}}
+    	    e.choice(:"Edit a Bread's Info" ) {wrapper{BreadsMenu.new(@which_day, @breads).display_options}}
+    	    e.choice(:"Return to Main Menu" ) {wrapper{MainMenu.new(@which_day, @breads).display_options}}
     	  end
     	end
     end
@@ -77,7 +77,7 @@ module Menus
     	    @current_day.bread_list.each do |k|
     	      b.choice(:"#{k.name}") {wrapper{@breads.delete_bread(@which_day, k)}}
     	    end
-    	    b.choice(:"Return to Edit Menu" ) {EditMenu.new(@which_day, @breads)}
+    	    b.choice(:"Return to Edit Menu" ) {EditMenu.new(@which_day, @breads).display_options}
     	  end
     	end
     end
@@ -108,7 +108,7 @@ module Menus
       	  @current_day.bread_list.each do |k|
       	    p.choice(:"#{k.name}") {wrapper{data_menu(k)}}
       	  end
-      	  p.choice(:"Return to Edit Menu") {EditMenu.new(@which_day, @breads, @which_day)}
+      	  p.choice(:"Return to Edit Menu") {EditMenu.new(@which_day, @breads, @which_day).display_options}
       	end
     	end
     end
@@ -136,9 +136,9 @@ module Menus
       	  d.choice(:"Bake Time" ) {wrapper{@breads.edit_bread(@which_day, @current_bread, :bake)}}
       	  d.choice(:"Number of Loaves" ) {wrapper{@breads.edit_bread(@which_day, @current_bread, :loaves)}}
       	  d.choice(:"Show Updated Schedule") {wrapper{@current_day.publish}}
-      	  d.choice(:"Choose a different bread" ) {wrapper{BreadMenu.new(@which_day, @breads)}}
-      	  d.choice(:"Return to Edit Menu" ) {wrapper{EditMenu.new(@which_day, @breads)}}
-      	  d.choice(:"Return to Main Menu" ) {wrapper{MainMenu.new(@which_day, @breads)}}
+      	  d.choice(:"Choose a different bread" ) {wrapper{BreadMenu.new(@which_day, @breads).display_options}}
+      	  d.choice(:"Return to Edit Menu" ) {wrapper{EditMenu.new(@which_day, @breads).display_options}}
+      	  d.choice(:"Return to Main Menu" ) {wrapper{MainMenu.new(@which_day, @breads).display_options}}
       	end
     	end
     end
@@ -158,7 +158,7 @@ module Menus
         @breads.keys.each do |b|
           s.choice(:"#{b}") {@current_day = @breads[b]; @which_day = b}
         end
-        s.choice(:"Return to Main Menu") {MainMenu.new(@which_day, @breads)}
+        s.choice(:"Return to Main Menu") {MainMenu.new(@which_day, @breads).display_options}
       end
       @which_day
     end

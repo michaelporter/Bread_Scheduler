@@ -1,4 +1,5 @@
 require 'lib/BreadClass.rb'
+require 'lib/time_manipulation.rb'
 
 # Current Assumptions
   # 20-minute Prep Time before Rise begins
@@ -6,6 +7,7 @@ require 'lib/BreadClass.rb'
   # Consolidated oven-time will mark proper scheduling, rather than breads-per-hour
 
 class BreadCalc
+  include TimeManipulation
 
   attr_accessor :bread_list, :bake_day, :loaf_count, :store_time, :alt_name, :pans
 
@@ -403,29 +405,29 @@ class BreadCalc
     @interior1 = @interior1.sort.reverse #Currently sorting for total.
 
     @longest_rise.start_at = @sched_time
-    @longest_rise.pan_at = @sched_time + in_seconds(:min, @longest_rise.int_rise) unless @longest_rise.need_pan == false
-    @longest_rise.bake_at = @sched_time + in_seconds(:min, @longest_rise.rise)
-    @longest_rise.done_at = @sched_time + in_seconds(:min, @longest_rise.total)
+    @longest_rise.pan_at   = @sched_time + in_seconds(:min, @longest_rise.int_rise) unless @longest_rise.need_pan == false
+    @longest_rise.bake_at  = @sched_time + in_seconds(:min, @longest_rise.rise)
+    @longest_rise.done_at  = @sched_time + in_seconds(:min, @longest_rise.total)
 
     unless @interior1.empty?
       @long_interior = @interior1[0]
       @sched_time += in_seconds(:min, 20)
 
       @long_interior.start_at = @sched_time
-      @long_interior.pan_at = @sched_time + in_seconds(:min, @long_interior.int_rise) unless @long_interior.need_pan == false
-      @long_interior.bake_at = @sched_time + in_seconds(:min, @long_interior.rise)
-      @long_interior.done_at = @sched_time + in_seconds(:min, @long_interior.total)
+      @long_interior.pan_at   = @sched_time + in_seconds(:min, @long_interior.int_rise) unless @long_interior.need_pan == false
+      @long_interior.bake_at  = @sched_time + in_seconds(:min, @long_interior.rise)
+      @long_interior.done_at  = @sched_time + in_seconds(:min, @long_interior.total)
 
       @sched_time += in_seconds(:min, @long_interior.total)
 
       @interior1.delete_at(0)
 
       @interior1.each do |k|
-        k.start_at = @sched_time - in_seconds(:min, k.rise)
-        k.pan_at = k.start_at + in_seconds(:min, k.int_rise) unless k.need_pan == false
-        k.bake_at = @sched_time + in_seconds(:min, 2)
+        k.start_at   = @sched_time - in_seconds(:min, k.rise)
+        k.pan_at     = k.start_at  + in_seconds(:min, k.int_rise) unless k.need_pan == false
+        k.bake_at    = @sched_time + in_seconds(:min, 2)
         @sched_time += in_seconds(:min, k.bake)
-        k.done_at = @sched_time += in_seconds(:min, 2)
+        k.done_at    = @sched_time += in_seconds(:min, 2)
       end
     end
 
@@ -435,10 +437,10 @@ class BreadCalc
 
       @interior2.each do |k|
         k.start_at = starting - in_seconds(:min, k.rise) # 20 to account for prep time before rise
-        k.pan_at = starting - in_seconds(:min, k.int_rise)
-        k.bake_at = starting + in_seconds(:min, 2) # 2 to account for time to switch pans in oven
-        starting += in_seconds(:min, k.bake+2)
-        k.done_at = starting
+        k.pan_at   = starting - in_seconds(:min, k.int_rise)
+        k.bake_at  = starting + in_seconds(:min, 2) # 2 to account for time to switch pans in oven
+        starting  += in_seconds(:min, k.bake+2)
+        k.done_at  = starting
       end
     end
   end
@@ -481,14 +483,4 @@ class BreadCalc
       @all_times = k.check_first_bread(@all_times, @pans, @store_time)
     end
   end
-  
-  def in_seconds(type, number)
-     case type
-       when :min
-         number * 60
-       when :hour
-         number * 60 * 60
-      end
-  end
-
 end 
