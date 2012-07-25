@@ -9,5 +9,5 @@ describe DayCollector do
 	it "should return a new DayCollector object" do
 		@breadhash.should be_instance_of(DayCollector)
 	end
-
+	
 end
