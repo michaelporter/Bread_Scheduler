@@ -14,7 +14,6 @@ class BreadMenus
 
   def begin
     puts greeting; sleep(0.8)
-
     Menus::MainMenu.new(@which_day, @breads).display_options
   end
 

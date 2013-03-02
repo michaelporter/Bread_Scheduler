@@ -9,7 +9,6 @@ describe Bread do
 
 	it "should return a new Bread object" do
 		@bread.should be_instance_of(Bread)
-
 	end
 
 
