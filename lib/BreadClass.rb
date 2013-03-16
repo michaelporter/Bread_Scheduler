@@ -27,24 +27,12 @@ class Bread
     self.total <=> other.total
   end
 
-  def self.first_bread
-    @@first_bread
-  end
-
-  def self.orig_vals
-    @@orig_vals = []
-  end
-
-  def publish_data
-    puts " #{@name}:"
-    puts " Rise: #{@rise}"
-    puts " Bake: #{@bake}"
-    puts " Loaves: #{@loaves}"
-    puts " Start Time: #{@start_at.strftime("%I:%M %p")}"
-    puts " Bake Time: #{@bake_at.strftime("%I:%M %p")}"
-    puts " Done Time: #{@done_at.strftime("%I:%M %p")}"
-    puts "-----------------*********-----------------"
-    puts " "
+  def add_count(bread, count, inc)
+    bread.start_at += count
+    bread.pan_at += count unless bread.need_pan == false
+    bread.bake_at += count
+    bread.done_at += count
+    inc = in_seconds(:min, 2)
   end
 
   def check_against_times(dest, pan_count, val_array)    # Runs recursively through the existing values in the hash
@@ -114,47 +102,85 @@ class Bread
 
       dest_earliest = dest.sort[0][0]
       diff = dest_earliest.to_i - start_time.to_i   # resets the whole schedule to the start time, in
-      												# case the first bread's start time was shifted
+                              # case the first bread's start time was shifted
       update_all_breads_times(dest, diff)
     end
     return dest
   end
 
- private
-
-  def update_all_breads_times(dest, diff)   # Problem Area: For some reason, unable to loop through
-                                            # the dest hash itself; it would write certain values twice,
-                                            # subtracting the diff twice, and leading to an inaccurate
-                                            # schedule.  This, so far, works.
-    breads = []
-    dest.each do |ke, va|
-      if !breads.include?(va[1])
-        breads.push(va[1])
+  def check_new_values(current_bread, current_value, pan_count, dest)
+    pot_vals = [current_bread.start_at, current_bread.pan_at, current_bread.done_at, current_bread.bake_at] #bake_at last, to ensure no oven conflicts
+    pot_vals.delete(current_value)
+    pot_vals.each do |b|
+      orig = b
+      if b == nil
+        next
+      end
+      if (dest.has_key?(b) && !dest[b][0].include?(current_bread.name)) || check_oven(current_bread, dest) || check_starts(current_bread, dest) || check_pans(current_bread, dest, pan_count) then check_against_times(dest, pan_count, b)
       end
     end
-    breads.each do |bread|                  # This can be refactored
-      val = dest.values_at(bread.start_at)
-      dest.delete(bread.start_at)
-      bread.start_at -= diff
-      dest[bread.start_at] = val[0]
+  end
 
-      unless bread.need_pan == false
-        val = dest.values_at(bread.pan_at)
-        dest.delete(bread.pan_at)
-        bread.pan_at -= diff
-        dest[bread.pan_at] = val[0]
+  def check_oven(current, dest_collection) # First checks that previously placed baking starts do not occur within
+                                           # the current baking for this bread;
+                                           # Second checks that the current baking does not occur within the baking
+                                           # of a previously placed bread.
+    if !dest_collection.empty?
+      dest_collection.each do |k, v|
+        if (current.bake_at < v[1].bake_at && v[1].bake_at < current.done_at) || (v[1].bake_at < current.bake_at && current.bake_at < v[1].done_at)
+          @conflict = v[1]
+          return true
+        end
       end
-
-      val = dest.values_at(bread.bake_at)
-      dest.delete(bread.bake_at)
-      bread.bake_at -= diff
-      dest[bread.bake_at] = val[0]
-
-      val = dest.values_at(bread.done_at)
-      dest.delete(bread.done_at)
-      bread.done_at -= diff
-      dest[bread.done_at] = val[0]
     end
+    return false
+  end
+
+  def check_pans(current, dest_collection, pan_num) # Ensures no pan overlap; Returns False if no conflicts
+    @conflict = nil
+    pan_track = []
+    if !dest_collection.empty? && current.need_pan != false   # shouldn't need this false here; 
+                                  # was there a reason?
+      pan_used = 0
+      dest_collection.each do |k, v|
+        unless v[1].need_pan == false || v[1] == current
+          if v[1].pan_at < current.pan_at && current.pan_at < v[1].done_at  # checks other bread's needs at the
+                                            # time when the current bread needs
+                                            # the pans
+            pan_used += v[1].loaves
+            pan_track.push([v[1].done_at, v[1]])
+            ap pan_track
+            puts "-----"
+          end
+        end
+        if pan_used + current.loaves > pan_num || pan_used == pan_num  # if we are over, or already full
+          pan_track.sort!  # should be in the unless statement yes?  Will check on this
+          pan_track.reverse!
+          unless pan_track.empty?
+            @conflict = pan_track[0][1]  # this grabs the latest bread obj in the schedule
+            return true
+          end
+        end
+      end
+    end
+    return false
+  end
+
+  def check_starts(current, dest_collection) # Ensures 20 minute prep time for each bread;
+    if !dest_collection.empty?
+      dest_collection.each do |k, v|
+        diff = current.start_at-v[1].start_at
+        diff = diff.to_f.abs
+        if diff > 0
+          if diff.to_i < in_seconds(:min, 20)
+            @conflict = v[1]
+            return true
+          end
+        else return false
+        end
+      end
+    end
+    return false
   end
 
   def get_inc(current_bread, current_value, dest, pan_count)   # sets time to increment when conflicts occur
@@ -221,86 +247,58 @@ class Bread
     end
   end 
 
-  def check_new_values(current_bread, current_value, pan_count, dest)
-    pot_vals = [current_bread.start_at, current_bread.pan_at, current_bread.done_at, current_bread.bake_at] #bake_at last, to ensure no oven conflicts
-    pot_vals.delete(current_value)
-    pot_vals.each do |b|
-      orig = b
-      if b == nil
-        next
-      end
-      if (dest.has_key?(b) && !dest[b][0].include?(current_bread.name)) || check_oven(current_bread, dest) || check_starts(current_bread, dest) || check_pans(current_bread, dest, pan_count) then check_against_times(dest, pan_count, b)
-      end
-    end
-  end
-   
-  def add_count(bread, count, inc)
-    bread.start_at += count
-    bread.pan_at += count unless bread.need_pan == false
-    bread.bake_at += count
-    bread.done_at += count
-    inc = in_seconds(:min, 2)
+  def self.first_bread
+    @@first_bread
   end
 
-  def check_oven(current, dest_collection) # First checks that previously placed baking starts do not occur within
-                                           # the current baking for this bread;
-                                           # Second checks that the current baking does not occur within the baking
-                                           # of a previously placed bread.
-    if !dest_collection.empty?
-      dest_collection.each do |k, v|
-        if (current.bake_at < v[1].bake_at && v[1].bake_at < current.done_at) || (v[1].bake_at < current.bake_at && current.bake_at < v[1].done_at)
-          @conflict = v[1]
-          return true
-        end
-      end
-    end
-    return false
+  def self.orig_vals
+    @@orig_vals = []
   end
 
-  def check_pans(current, dest_collection, pan_num) # Ensures no pan overlap; Returns False if no conflicts
-    @conflict = nil
-    pan_track = []
-    if !dest_collection.empty? && current.need_pan != false   # shouldn't need this false here; 
-	    													  # was there a reason?
-      pan_used = 0
-      dest_collection.each do |k, v|
-        unless v[1].need_pan == false || v[1] == current
-          if v[1].pan_at < current.pan_at && current.pan_at < v[1].done_at  # checks other bread's needs at the
-          																	# time when the current bread needs
-          																	# the pans
-            pan_used += v[1].loaves
-            pan_track.push([v[1].done_at, v[1]])
-            ap pan_track
-            puts "-----"
-          end
-        end
-        if pan_used + current.loaves > pan_num || pan_used == pan_num  # if we are over, or already full
-          pan_track.sort!  # should be in the unless statement yes?  Will check on this
-          pan_track.reverse!
-          unless pan_track.empty?
-            @conflict = pan_track[0][1]  # this grabs the latest bread obj in the schedule
-            return true
-          end
-        end
-      end
-    end
-    return false
+  def publish_data
+    puts " #{@name}:"
+    puts " Rise: #{@rise}"
+    puts " Bake: #{@bake}"
+    puts " Loaves: #{@loaves}"
+    puts " Start Time: #{@start_at.strftime("%I:%M %p")}"
+    puts " Bake Time: #{@bake_at.strftime("%I:%M %p")}"
+    puts " Done Time: #{@done_at.strftime("%I:%M %p")}"
+    puts "-----------------*********-----------------"
+    puts " "
   end
 
-  def check_starts(current, dest_collection) # Ensures 20 minute prep time for each bread;
-    if !dest_collection.empty?
-      dest_collection.each do |k, v|
-        diff = current.start_at-v[1].start_at
-        diff = diff.to_f.abs
-        if diff > 0
-          if diff.to_i < in_seconds(:min, 20)
-            @conflict = v[1]
-            return true
-          end
-        else return false
-        end
+  def update_all_breads_times(dest, diff)   # Problem Area: For some reason, unable to loop through
+                                            # the dest hash itself; it would write certain values twice,
+                                            # subtracting the diff twice, and leading to an inaccurate
+                                            # schedule.  This, so far, works.
+    breads = []
+    dest.each do |ke, va|
+      if !breads.include?(va[1])
+        breads.push(va[1])
       end
     end
-    return false
+    breads.each do |bread|                  # This can be refactored
+      val = dest.values_at(bread.start_at)
+      dest.delete(bread.start_at)
+      bread.start_at -= diff
+      dest[bread.start_at] = val[0]
+
+      unless bread.need_pan == false
+        val = dest.values_at(bread.pan_at)
+        dest.delete(bread.pan_at)
+        bread.pan_at -= diff
+        dest[bread.pan_at] = val[0]
+      end
+
+      val = dest.values_at(bread.bake_at)
+      dest.delete(bread.bake_at)
+      bread.bake_at -= diff
+      dest[bread.bake_at] = val[0]
+
+      val = dest.values_at(bread.done_at)
+      dest.delete(bread.done_at)
+      bread.done_at -= diff
+      dest[bread.done_at] = val[0]
+    end
   end
 end

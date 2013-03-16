@@ -1,3 +1,5 @@
+$: << File.join(File.dirname(__FILE__), "/..")
+
 require 'rubygems'
 gem 'highline', '= 1.5.0'
 require 'highline/import'

@@ -25,11 +25,5 @@ describe BreadMenus do
 		it "should have a begin method" do
 			@menu.should respond_to(:begin)
 		end
-
-		it "should create a MainMenu object" do
-			Menus::MainMenu.should_receive(:new).with(@which_day, @breads).and_return(@main_menu)
-			@menu.begin
-		end
 	end
-
 end

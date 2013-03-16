@@ -15,8 +15,9 @@ class BreadCalc
     @bake_day = date
     @start_hour = hour
     @start_min = minute
+    
     begin
-    @sched_time = Time.local(@bake_day.year, @bake_day.month, @bake_day.day, @start_hour, @start_min, 0)
+      @sched_time = Time.local(@bake_day.year, @bake_day.month, @bake_day.day, @start_hour, @start_min, 0)
     rescue ArgumentError => e
       puts "*************EXCEPTION RAISED*************"
       puts "Oops!  The time input does not fit within reason!"
@@ -24,32 +25,48 @@ class BreadCalc
       puts "EXITING PROGRAM"
       Process.exit
     end
-    @store_time = @sched_time
-    @temp = 78
+
+    @all_groups = []
+    @all_times = {}
     @alt_name = desc
-    @pans = 0
-    @loaf_count = 0
+    @bake_hash = {}
+    @bake_list = []
     @bread_count = 0
     @bread_list = []
-    @rise_list = []
-    @bake_list = []
-    @total_list = []
-    @all_groups = []
+    @first_grouping = nil
     @interior1 = []
     @interior2 = []
-    @rise_hash = {}
-    @bake_hash = {}
-    @total_hash = {}
+    @loaf_count = 0
     @longest_list = {}
-    @all_times = {}
-    @to_delete = nil
     @longest_rise = nil
-    @first_grouping = nil
+    @pans = 0
+    @rise_hash = {}
+    @rise_list = []
+    @store_time = @sched_time
+    @temp = 78
+    @to_delete = nil
+    @total_hash = {}
+    @total_list = []
   end
 
-  def set_up_day(menu_type = "main")
-    gather_conditions(menu_type)
-    gather_breads(menu_type)
+  def adjust_for_temp(temp)    # Estimates for now, based on colloquial knowledge, found on several bread blogs,
+                               # pending discovery of more accurate claims; everything points to rising being quite complicated,
+                               # but these measures have worked very accurately for me so far in practice.
+    unless temp == nil
+      @bread_list.each do |k|
+        if temp < 70
+          k.rise = k.rise * 1.5
+          k.pan_rise = k.pan_rise * 1.5
+          k.int_rise = k.rise - k.pan_rise
+          k.total = k.rise + k.bake + 20
+        elsif temp < 61
+          k.rise = k.rise * 2
+          k.pan_rise = k.pan_rise * 2
+          k.int_rise = k.rise - k.pan_rise
+          k.total = k.rise + k.bake + 20
+        end
+      end
+    end
   end
 
   def count_loaves
@@ -59,57 +76,84 @@ class BreadCalc
     end
   end
 
-  def run
-    reset_all_things
-    find_longest
-    interior_scheduling
-    publish
-  end
-    
-  def run_without_text
-    reset_all_things
-    find_longest
-    interior_scheduling
-    count_loaves
+  def dot_count(current, next_one) # Places one dot per line for every span of 35 minutes between
+                                   # two scheduled actions;
+    diff = next_one - current
+    count = (diff/in_seconds(:min, 35)).to_i
+    count.times {puts "~"}
   end
 
-  def publish                # This gives the final resulting schedule, ordered, as it should be read by
-                             # users. This is currently the only place where the schedule is completely
-                             # ordered;
-    @loaf_count = 0
-    count_loaves
-
-    alt = ""
-
-    if @alt_name != false && @alt_name != nil
-      alt = ", #{@alt_name}"
-    else
-      alt = ""
-    end
-    puts "\nHere is your baking order for #{@bake_day.strftime("%m/%d/%Y")}#{alt}. \n"
-    
-    sorted_all_times = @all_times.sort #[ [date_obj, [str, obj]], [date_obj2, [str2, obj2]], etc ]
-
-    sorted_all_times.each do |k|
-      obj_part = k[1]
-      puts "#{k[0].strftime("%I:%M %p")} -- #{obj_part[0]}"
-      if sorted_all_times[sorted_all_times.index(k)+1]
-        dot_count(k[0], sorted_all_times[sorted_all_times.index(k)+1][0])
+  def final_ordering             # Checks the breads' times against those of other breads, and adjusts the current
+                                 # bread's times accordingly. 20 minutes is the standard time for change, to
+                                 # account for the typical prep time for each bread. Other values are variable, 
+                                 # depending onthe bread's relation in time to previously-scheduled breads.
+    @final_sched.each do |k|
+      if k == nil || k == false
+        @final_sched.delete(k)
+        next
       end
-      sleep(0.05)
+      k.check_against_times(@all_times, @pans, [k.start_at, k.pan_at, k.bake_at, k.done_at]) do
+        @all_times[k.start_at] = ["Start #{k.name}", k]
+        if k.need_pan != false
+          @all_times[k.pan_at] = ["Put #{k.name} into the loaf pan", k]
+        end
+        @all_times[k.bake_at] = ["Put #{k.name} into the oven", k]
+        @all_times[k.done_at] = ["Take #{k.name} out of the oven", k]
+      end
+      @all_times = k.check_first_bread(@all_times, @pans, @store_time)
     end
-
-    if @loaf_count == 1
-      loaf = "loaf"
-    else
-      loaf = "loaves"
-    end
-    puts ""
-    puts "For a total of #{@loaf_count} #{loaf}!"
   end
 
+  def find_longest
+    make_hash(@rise_hash, :rise)
+    make_hash(@bake_hash, :bake)
+    make_hash(@total_hash, :total)
 
-  private
+    # Find the Longest Rise Time
+    @longest_rise = @rise_hash.sort[@rise_hash.sort.length-1][1]
+    @to_delete = @longest_rise                                       # Removes the longest rise from this because it will not
+                                                                     # be scheduled like the rest; it provides the relative
+                                                                     # time marker around which other breads will be scheduled
+    @rise_hash.delete(@rise_hash.index(@to_delete))
+
+    # Find the Longest Bake Time
+    @longest_bake = @bake_hash.sort[0][1]    # I don't do anything with this yet, so it's not protected from the longest rise
+
+    # Find the Longest Total Time
+    @total_hash.delete(@total_hash.index(@to_delete))
+
+    longest = @total_hash.sort[@total_hash.sort.length-1][1] unless @total_hash.empty?
+    @longest_total = longest unless (longest == @to_delete || @total_hash.empty?)        # Protects @longest_total from taking the
+                                                                                         # longest rise as it's value
+  end
+
+  def gather_breads(menu_type)           # Gets each breads' info and makes the bread objects
+    this_many = 0
+    while this_many < @bread_count.to_i
+      
+      name, rise, bake, need_pan, pan_rise, loaves = get_bread_info(this_many, menu_type)
+      
+
+      begin
+        @bread_list.push(Bread.new(name, rise, bake, loaves, pan_rise, need_pan))
+      rescue SyntaxError => e
+        puts "*************EXCEPTION RAISED*************"
+        puts "Oops!  Syntax Error when adding that bread:"
+        puts "#{e}"
+        puts "EXITING PROGRAM"
+        Process.exit
+      rescue => e
+        puts "*************EXCEPTION RAISED*************"
+        puts "Something about this bread's data is incompatible with the current program."
+        puts "EXITING PROGRAM"
+        Process.exit
+      end
+      this_many += 1
+      puts ""; sleep(0.2); puts "Thanks!"; puts ""; sleep(0.2)
+    end
+    adjust_for_temp(@temp)
+    count_loaves
+  end
 
   def gather_conditions(menu_type)               # Gets number of breads, pans, and kitchen temp (optional)
     add_make = ""
@@ -144,34 +188,6 @@ class BreadCalc
     elsif temp == false
       temp = nil
     end
-  end
-  
-  def gather_breads(menu_type)           # Gets each breads' info and makes the bread objects
-    this_many = 0
-    while this_many < @bread_count.to_i
-      
-      name, rise, bake, need_pan, pan_rise, loaves = get_bread_info(this_many, menu_type)
-      
-
-      begin
-        @bread_list.push(Bread.new(name, rise, bake, loaves, pan_rise, need_pan))
-      rescue SyntaxError => e
-        puts "*************EXCEPTION RAISED*************"
-        puts "Oops!  Syntax Error when adding that bread:"
-        puts "#{e}"
-        puts "EXITING PROGRAM"
-        Process.exit
-      rescue => e
-        puts "*************EXCEPTION RAISED*************"
-        puts "Something about this bread's data is incompatible with the current program."
-        puts "EXITING PROGRAM"
-        Process.exit
-      end
-      this_many += 1
-      puts ""; sleep(0.2); puts "Thanks!"; puts ""; sleep(0.2)
-    end
-    adjust_for_temp(@temp)
-    count_loaves
   end
 
   def get_bread_info(how_many, menu_type)   # Derp
@@ -220,8 +236,8 @@ class BreadCalc
         end
       loaves = ask("#{intro}ow many loaves do you expect from this recipe?", Integer); sleep(0.1); puts ""
       if loaves > @pans && pan == true                    # This should really just become conditional on
-      													  # whether the bread has pans; how many recipes use
-      													  # both pans and stone?
+                                  # whether the bread has pans; how many recipes use
+                                  # both pans and stone?
         puts "That is more loaves than you have pans!"
         p = -1
       else
@@ -231,25 +247,68 @@ class BreadCalc
     return name, rise, bake, need_pan, pan_rise, loaves
   end
 
-  def adjust_for_temp(temp)    # Estimates for now, based on colloquial knowledge, found on several bread blogs,
-                               # pending discovery of more accurate claims; everything points to rising being quite complicated,
-                               # but these measures have worked very accurately for me so far in practice.
-    unless temp == nil
-      @bread_list.each do |k|
-        if temp < 70
-          k.rise = k.rise*1.5
-          k.pan_rise = k.pan_rise*1.5
-          k.int_rise = k.rise - k.pan_rise
-          k.total = k.rise + k.bake + 20
-        elsif temp < 61
-          k.rise = k.rise*2
-          k.pan_rise = k.pan_rise*2
-          k.int_rise = k.rise - k.pan_rise
-          k.total = k.rise + k.bake + 20
-        end
-      end
-    end
+  def interior_scheduling
+    make_interiors
+    time_interiors
+    order_breads
+    final_ordering
   end
+
+  def publish                # This gives the final resulting schedule, ordered, as it should be read by
+                             # users. This is currently the only place where the schedule is completely
+                             # ordered;
+    @loaf_count = 0
+    count_loaves
+
+    alt = ""
+
+    if @alt_name != false && @alt_name != nil
+      alt = ", #{@alt_name}"
+    else
+      alt = ""
+    end
+    puts "\nHere is your baking order for #{@bake_day.strftime("%m/%d/%Y")}#{alt}. \n"
+    
+    sorted_all_times = @all_times.sort #[ [date_obj, [str, obj]], [date_obj2, [str2, obj2]], etc ]
+
+    sorted_all_times.each do |k|
+      obj_part = k[1]
+      puts "#{k[0].strftime("%I:%M %p")} -- #{obj_part[0]}"
+      if sorted_all_times[sorted_all_times.index(k)+1]
+        dot_count(k[0], sorted_all_times[sorted_all_times.index(k)+1][0])
+      end
+      sleep(0.05)
+    end
+
+    if @loaf_count == 1
+      loaf = "loaf"
+    else
+      loaf = "loaves"
+    end
+    puts ""
+    puts "For a total of #{@loaf_count} #{loaf}!"
+  end
+
+  def run
+    reset_all_things
+    find_longest
+    interior_scheduling
+    publish
+  end
+    
+  def run_without_text
+    reset_all_things
+    find_longest
+    interior_scheduling
+    count_loaves
+  end
+
+  def set_up_day(menu_type = "main")
+    gather_conditions(menu_type)
+    gather_breads(menu_type)
+  end
+
+  private
 
   def make_hash(which_hash, which_value)    # Gathers all related times for each bread into a hash
     @bread_list.each do |k|
@@ -267,28 +326,63 @@ class BreadCalc
     end
   end
   
-  def find_longest
-    make_hash(@rise_hash, :rise)
-    make_hash(@bake_hash, :bake)
-    make_hash(@total_hash, :total)
+  def make_interiors # Gathers the breads whose total time together fits in the longest ones' rise times;
+                       # It first gathers the breads that fit within the time of the longest of all into 
+                       # @interior1; the remaining breads are gathered into @interior2;
 
-    # Find the Longest Rise Time
-    @longest_rise = @rise_hash.sort[@rise_hash.sort.length-1][1]
-    @to_delete = @longest_rise                                       # Removes the longest rise from this because it will not
-                                                                     # be scheduled like the rest; it provides the relative
-                                                                     # time marker around which other breads will be scheduled
-    @rise_hash.delete(@rise_hash.index(@to_delete))
+    reverse_tot = @total_hash.sort.reverse
+    #[[tot, obj], [tot2, obj2], etc ]
 
-    # Find the Longest Bake Time
-    @longest_bake = @bake_hash.sort[0][1]    # I don't do anything with this yet, so it's not protected from the longest rise
+    @interior_time = 0
+  
+    unless reverse_tot.empty?
+      @interior1.push(reverse_tot[0][1])
+      @interior_time += reverse_tot[0][1].total
 
-    # Find the Longest Total Time
-    @total_hash.delete(@total_hash.index(@to_delete))
+      if reverse_tot.length > 1
+        reverse_tot.each do |k|
+          unless @interior_time >= @longest_rise.rise || reverse_tot.empty?
+            if @interior1.include?(k[1])
+              next
+            end
+            @interior1.push(k[1])
+            @interior_time += k[1].bake
+            reverse_tot.delete(k)
+          end
+        end
+      else
+        unless @interior_time >= @longest_rise.rise || reverse_tot.empty?
+          unless @interior1.include?(reverse_tot[0][1])
+            @interior1.push(reverse_tot[0][1])
+          end
+          @interior_time += reverse_tot[0][1].bake
+          reverse_tot.delete_at(0)
+        end
+      end
+    end
+    if !reverse_tot.empty?
+     reverse_tot.each do |k|
+     @interior2.push(k[1]) unless @interior1.include?(k[1])
+     end
+    end
+  end
 
-    longest = @total_hash.sort[@total_hash.sort.length-1][1] unless @total_hash.empty?
-    @longest_total = longest unless (longest == @to_delete || @total_hash.empty?)        # Protects @longest_total from taking the
-                                                                                         # longest rise as it's value
+  def order_breads # Places the timed, unchecked breads into this collection, ordered roughly by start time
+    @final_sched = []
+ 
+    @final_sched.push(@longest_rise)
+    @final_sched.push(@long_interior) unless @long_interior == ""  # In case I'm only doing 1 or two long breads, or there was 
+                                                                   # for some other reason no bread to fill this value
 
+    @interior1.each do |k|
+     @final_sched.push(k)
+    end
+    
+    if !@interior2.empty?
+     @interior2.each do |v|
+     @final_sched.push(v)
+     end
+    end
   end
 
   def reset(collection)
@@ -335,61 +429,6 @@ class BreadCalc
     @longest_total = nil
 
     @sched_time = Time.local(@bake_day.year, @bake_day.month, @bake_day.day, @start_hour, @start_min, 0)  # Sets time to original values
-  end
-
-  def dot_count(current, next_one) # Places one dot per line for every span of 35 minutes between
-                                   # two scheduled actions;
-    diff = next_one - current
-    count = (diff/in_seconds(:min, 35)).to_i
-    count.times {puts "~"}
-  end
-
-  def interior_scheduling
-    make_interiors
-    time_interiors
-    order_breads
-    final_ordering
-  end
-  
-  def make_interiors # Gathers the breads whose total time together fits in the longest ones' rise times;
-                       # It first gathers the breads that fit within the time of the longest of all into 
-                       # @interior1; the remaining breads are gathered into @interior2;
-
-    reverse_tot = @total_hash.sort.reverse
-    #[[tot, obj], [tot2, obj2], etc ]
-
-    @interior_time = 0
-  
-    unless reverse_tot.empty?
-      @interior1.push(reverse_tot[0][1])
-      @interior_time += reverse_tot[0][1].total
-
-      if reverse_tot.length > 1
-        reverse_tot.each do |k|
-          unless @interior_time >= @longest_rise.rise || reverse_tot.empty?
-            if @interior1.include?(k[1])
-              next
-            end
-            @interior1.push(k[1])
-            @interior_time += k[1].bake
-            reverse_tot.delete(k)
-          end
-        end
-      else
-        unless @interior_time >= @longest_rise.rise || reverse_tot.empty?
-          unless @interior1.include?(reverse_tot[0][1])
-            @interior1.push(reverse_tot[0][1])
-          end
-          @interior_time += reverse_tot[0][1].bake
-          reverse_tot.delete_at(0)
-        end
-      end
-    end
-    if !reverse_tot.empty?
-     reverse_tot.each do |k|
-     @interior2.push(k[1]) unless @interior1.include?(k[1])
-     end
-    end
   end
   
   def time_interiors            # Assigns times to each bread's starting, baking, and finishing, according to their
@@ -442,45 +481,6 @@ class BreadCalc
         starting  += in_seconds(:min, k.bake+2)
         k.done_at  = starting
       end
-    end
-  end
-  
-  def order_breads # Places the timed, unchecked breads into this collection, ordered roughly by start time
-    @final_sched = []
- 
-    @final_sched.push(@longest_rise)
-    @final_sched.push(@long_interior) unless @long_interior == ""  # In case I'm only doing 1 or two long breads, or there was 
-                                                                   # for some other reason no bread to fill this value
-
-    @interior1.each do |k|
-     @final_sched.push(k)
-    end
-    
-    if !@interior2.empty?
-     @interior2.each do |v|
-     @final_sched.push(v)
-     end
-    end
-  end
-  
-  def final_ordering             # Checks the breads' times against those of other breads, and adjusts the current
-                                 # bread's times accordingly. 20 minutes is the standard time for change, to
-                                 # account for the typical prep time for each bread. Other values are variable, 
-                                 # depending onthe bread's relation in time to previously-scheduled breads.
-    @final_sched.each do |k|
-      if k == nil || k == false
-        @final_sched.delete(k)
-        next
-      end
-      k.check_against_times(@all_times, @pans, [k.start_at, k.pan_at, k.bake_at, k.done_at]) do
-        @all_times[k.start_at] = ["Start #{k.name}", k]
-        if k.need_pan != false
-          @all_times[k.pan_at] = ["Put #{k.name} into the loaf pan", k]
-        end
-        @all_times[k.bake_at] = ["Put #{k.name} into the oven", k]
-        @all_times[k.done_at] = ["Take #{k.name} out of the oven", k]
-      end
-      @all_times = k.check_first_bread(@all_times, @pans, @store_time)
     end
   end
 end 

@@ -1,7 +1,6 @@
 require 'lib/BreadCalc.rb'
 
 describe BreadCalc do 
-
 	before(:each) do
 		date = Time.local(2012, 2, 12)
 		@breadcalc = BreadCalc.new(date, 12, 0, nil)
@@ -9,7 +8,9 @@ describe BreadCalc do
 
 	it "should make a new BreadCalc instance" do
 		@breadcalc.should be_instance_of(BreadCalc)
-	end
+  end
 
-
+  it "should reject unreasonable times" do
+    expect {@breadcalc = BreadCalc.new("gfh")}.to raise_error
+  end
 end

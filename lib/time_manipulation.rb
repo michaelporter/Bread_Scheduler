@@ -1,6 +1,4 @@
-
 module TimeManipulation
-
 	def in_seconds(type, number)
     case type
       when :min
