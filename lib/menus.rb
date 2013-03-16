@@ -1,8 +1,7 @@
-require 'lib/menu_methods.rb'
+require 'lib/MenuMethods.rb'
 
 module Menus
-
-  class BreadsMenu
+  class Menu
     include MenuMethods
 
     def initialize(which_day, breads_list)
@@ -10,9 +9,20 @@ module Menus
       @breads = breads_list
     end
 
-    def display_options
+    def display_options(&block)
       loop do
-        print_menu_title("Breads Menu")
+        yield
+      end
+    end
+  end
+
+  class BreadsMenu < Menu
+    def initialize(which_day, breads_list)
+      super(which_day, breads_list)
+    end
+
+    def display_options
+      menu = lambda { print_menu_title("Breads Menu")
 
         @current_day.bread_list.each do |k|
          k.publish_data
@@ -29,22 +39,19 @@ module Menus
           end
           p.choice(:"Return to Edit Menu") {EditMenu.new(@which_day, @breads, @which_day).display_options}
         end
-      end
+        }
+        super {menu}
     end
   end
 
-  class BreadDataMenu
-    include MenuMethods
-
+  class BreadDataMenu < Menu
     def initialize(which_day, breads_list, current_bread)
-      @which_day = which_day
-      @breads = breads_list
+      super(which_day, breads_list)
       @current_bread = current_bread
     end
 
     def display_options
-      loop do
-        print_menu_title("Bread Info Editing Menu")
+      menu = lambda { print_menu_title("Bread Info Editing Menu")
 
         bread.publish_data
     
@@ -59,20 +66,18 @@ module Menus
           d.choice(:"Return to Edit Menu" ) {wrapper{EditMenu.new(@which_day, @breads).display_options}}
           d.choice(:"Return to Main Menu" ) {wrapper{MainMenu.new(@which_day, @breads).display_options}}
         end
-      end
+        }
+        super &menu
     end
   end
 
-  class DeleteMenu
-    include MenuMethods
-
+  class DeleteMenu < Menu
     def initialize(which_day, breads_list)
-      @which_day = which_day
-      @breads = breads_list
+      super(which_day, breads_list)
     end
 
     def display_options
-      loop do
+      menu = lambda {
         print_menu_title("Delete Menu") 
 
         @current_day.publish
@@ -85,23 +90,21 @@ module Menus
           end
           b.choice(:"Return to Edit Menu" ) {EditMenu.new(@which_day, @breads).display_options}
         end
-      end
+      }
+      super &menu
     end
   end
 
-	class EditMenu
-		include MenuMethods
-
+	class EditMenu < Menu
 		def initialize(which_day, breads_list, current_day = nil)
-			@which_day = which_day
-			@breads = breads_list
+      super(which_day, breads_list)
 
 			@current_day = current_day ? current_day : check_for_day
 		end
 
 		def display_options
-			loop do
-      	puts "\n\n\n\n\n\n-----------------*********-----------------"
+      menu = lambda {
+        puts "\n\n\n\n\n\n-----------------*********-----------------"
       	puts " You are editing for #{@which_day} "
 
       	print_menu_title("Edit Menu")
@@ -115,22 +118,19 @@ module Menus
     	    e.choice(:"Edit a Bread's Info" ) {wrapper{BreadsMenu.new(@which_day, @breads).display_options}}
     	    e.choice(:"Return to Main Menu" ) {wrapper{MainMenu.new(@which_day, @breads).display_options}}
     	  end
-    	end
+        }
+        super &menu
     end
   end
 
-  class MainMenu
-    include MenuMethods
-
+  class MainMenu < Menu
     def initialize(which_day, breads_list)
-      @which_day = which_day
-      @breads = breads_list
+      super(which_day, breads_list)
     end
 
     def display_options
-      loop do
+      menu = lambda {
         print_menu_title("Main Menu")
-    
         choose do |m|
           m.prompt = "What would you like to do?"
           m.choice(:"New Baking Day" ) {wrapper{@breads.new_day}}
@@ -140,16 +140,18 @@ module Menus
           m.choice(:"Edit a Day" ) {wrapper{EditMenu.new(@which_day, @breads).display_options}}
           m.choice(:"Exit" ) {Process.exit}
         end
-      end
+      }
+
+      super &menu
     end
   end
 
-  class SchedulesMenu
+  class SchedulesMenu < Menu
   	def initialize(which_day, breads_list)
-			@which_day = which_day
-			@breads = breads_list
+      super(which_day, breads_list)
 		end
 
+    # where is this used such that it is different?
  	  def display_options # For returning a BreadCalc object value for a chosen day to the edit menu;
       print_menu_title("Schedules Menu")
       choose do |s|

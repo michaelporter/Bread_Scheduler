@@ -2,8 +2,8 @@
 # This class also houses the methods that deal with editing breads and making changes to the lists;
 
 require 'lib/BreadCalc.rb'
-require 'lib/BreadClass.rb'
-require 'lib/time_manipulation.rb'
+require 'lib/Bread.rb'
+require 'lib/TimeManipulation.rb'
 
 require 'rubygems'   # Do I really need this?  does it not inherit?
 gem 'highline'

@@ -1,7 +1,7 @@
 require 'rubygems'
 gem 'awesome_print', '= 1.0.2'
 require 'awesome_print'
-require 'lib/time_manipulation.rb'
+require 'lib/TimeManipulation.rb'
 
 class Bread
   include TimeManipulation
