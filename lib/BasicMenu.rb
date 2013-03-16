@@ -1,7 +1,7 @@
 $: << File.join(File.dirname(__FILE__), "/..")
 
 require 'rubygems'
-gem 'highline', '= 1.5.0'
+gem 'highline'
 require 'highline/import'
 require 'lib/BreadClass.rb'
 require 'lib/BreadHash.rb'

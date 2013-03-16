@@ -6,7 +6,7 @@ require 'lib/BreadClass.rb'
 require 'lib/time_manipulation.rb'
 
 require 'rubygems'   # Do I really need this?  does it not inherit?
-gem 'highline', '= 1.5.0'
+gem 'highline'
 require 'highline/import'
 
 class DayCollector < Hash
