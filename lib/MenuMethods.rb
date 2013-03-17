@@ -1,11 +1,10 @@
 require 'lib/Menus.rb'
 
 module MenuMethods
-
   def print_menu_title(menu_name)
-    puts "\n\n\n\n\n\n\n\n-----------------*********-----------------\n\n"
-    puts "                 #{menu_name} \n\n"
-    puts "-----------------*********-----------------\n\n\n\n"
+    puts "\n"*8 + "-----------------*********-----------------" + "\n"*2
+    puts          "                 #{menu_name}              " + "\n"*2
+    puts          "-----------------*********-----------------" + "\n"*5
     sleep(0.8)
   end
 
@@ -73,21 +72,22 @@ module MenuMethods
     if @breads.length == 1
       @which_day = @breads.keys[0]
       @current_day = @breads[@breads.keys[0]]
-      puts "\n\n\n\n\n\n\n\n\n\n\n\n"
+      puts "\n" * 12
       puts "** NOTE: You only have one baking day saved. **"
-      puts "\n\n\n\n\n\n\n\n\n\n\n"; sleep(1)
+      puts "\n" * 12
+      sleep(1)
     else
       Menus::SchedulesMenu.new(@which_day, @breads).display_options
     end
   
     if @breads.has_key?(@which_day)
-      puts "\n\n\n\n\n\n"
+      puts "\n" * 6
       @which_day
     else
       if @breads.length == 0
-        puts "\n\nNo schedules saved"
+        puts "\n"*2 + "No schedules saved"
       else
-        puts "\n\nSorry, couldn't find that day!"
+        puts "\n"*2 + "Sorry, couldn't find that day!"
       end
       Menus::MainMenu.new(@which_day, @breads).display_options
     end
