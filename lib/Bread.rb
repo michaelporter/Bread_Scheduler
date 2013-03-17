@@ -1,5 +1,5 @@
 require 'rubygems'
-gem 'awesome_print', '= 1.0.2'
+gem 'awesome_print'
 require 'awesome_print'
 require 'lib/TimeManipulation.rb'
 
@@ -253,10 +253,12 @@ class Bread
     end
   end 
 
+  # is this kosher? for the Bread to inherit this much information?
   def self.first_bread
     @@first_bread
   end
 
+  # what the hell does this do?
   def self.orig_vals
     @@orig_vals = []
   end

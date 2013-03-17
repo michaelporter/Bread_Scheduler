@@ -78,9 +78,12 @@ class BreadCalc
 
   def dot_count(current, next_one) # Places one dot per line for every span of 35 minutes between
                                    # two scheduled actions;
-    diff = next_one - current
+    result = ""
+    diff  = next_one - current
     count = (diff/in_seconds(:min, 35)).to_i
-    count.times {puts "~"}
+    count.times {result += "~\n"}
+
+    result
   end
 
   def final_ordering             # Checks the breads' times against those of other breads, and adjusts the current
@@ -279,7 +282,7 @@ class BreadCalc
       obj_part = k[1]
       puts "#{k[0].strftime("%I:%M %p")} -- #{obj_part[0]}"
       if sorted_all_times[sorted_all_times.index(k)+1]
-        dot_count(k[0], sorted_all_times[sorted_all_times.index(k)+1][0])
+        puts dot_count(k[0], sorted_all_times[sorted_all_times.index(k)+1][0])
       end
       sleep(0.05)
     end
@@ -315,8 +318,6 @@ class BreadCalc
     gather_breads(menu_type)
   end
 
-  private
-
   def make_hash(which_hash, which_value)    # Gathers all related times for each bread into a hash
     @bread_list.each do |k|
       key = case which_value
@@ -331,9 +332,15 @@ class BreadCalc
       if which_hash.has_key?(key) then key += 1
       end
 
+      # this really might not be kosher, as it does change quite a lot about the inputs.
+      # should seek to avoid that while refactoring this
       which_hash[key] = k     # [value => object_id, value2 => object_2_id, etc...]
     end
+
+    which_hash
   end
+
+  private
   
   def make_interiors # Gathers the breads whose total time together fits in the longest ones' rise times;
                        # It first gathers the breads that fit within the time of the longest of all into 
