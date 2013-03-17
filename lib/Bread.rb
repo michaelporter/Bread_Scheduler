@@ -36,9 +36,9 @@ class Bread
   end
 
   def check_against_times(dest, pan_count, val_array)    # Runs recursively through the existing values in the hash
-                                              # checking for both the value and the bread's name in
-                                              # association to avoid overwriting and repeats; also
-                                              # checks for oven occupancy, assuming only 1 oven.
+                                                         # checking for both the value and the bread's name in
+                                                         # association to avoid overwriting and repeats; also
+                                                         # checks for oven occupancy, assuming only 1 oven.
     all_vals = []
     check = self
 
@@ -81,11 +81,8 @@ class Bread
       end
 
       if check_oven(check, dest) || check_starts(check, dest) || check_pans(check, dest, pan_count)
-
         inc = get_inc(check, fb, dest, pan_count)
-        
         run_equipment_checks(check, fb, dest, pan_count, inc)
- 
         check_new_values(check, fb, pan_count, dest)
       end
     end
@@ -105,6 +102,7 @@ class Bread
                               # case the first bread's start time was shifted
       update_all_breads_times(dest, diff)
     end
+
     return dest
   end
 
@@ -121,6 +119,9 @@ class Bread
     end
   end
 
+  # this should be done instead with a lock switch instead of this unscalable if/else checking;
+  # equipment should be built out of classes that inherit from something that has a lock, and set the switch
+  # for each when used
   def check_oven(current, dest_collection) # First checks that previously placed baking starts do not occur within
                                            # the current baking for this bread;
                                            # Second checks that the current baking does not occur within the baking
@@ -136,6 +137,7 @@ class Bread
     return false
   end
 
+  # This is really not the responsibility of the bread
   def check_pans(current, dest_collection, pan_num) # Ensures no pan overlap; Returns False if no conflicts
     @conflict = nil
     pan_track = []
@@ -163,9 +165,11 @@ class Bread
         end
       end
     end
+
     return false
   end
 
+  # the bread class should only be concerned with a single bread
   def check_starts(current, dest_collection) # Ensures 20 minute prep time for each bread;
     if !dest_collection.empty?
       dest_collection.each do |k, v|
@@ -183,6 +187,7 @@ class Bread
     return false
   end
 
+  # this is terrible
   def get_inc(current_bread, current_value, dest, pan_count)   # sets time to increment when conflicts occur
     case
       when current_value == current_bread.bake_at && check_oven(current_bread, dest)
@@ -213,7 +218,8 @@ class Bread
     end
   end
 
-  def run_equipment_checks(current_bread, current_value, dest, pan_count, inc)   # I bet a lot of this logic could be abstracted or otherwise refactored
+  # this should be handled with an equipment class that inherits into the different types a lock switch
+  def run_equipment_checks(current_bread, current_value, dest, pan_count, inc)
     if current_value == current_bread.bake_at && check_oven(current_bread, dest)
       count = 0
       while dest.has_key?((current_value + count)) || (check_oven(current_bread, dest)) || check_starts(current_bread, dest)
@@ -264,7 +270,7 @@ class Bread
     puts " Bake Time: #{@bake_at.strftime("%I:%M %p")}"
     puts " Done Time: #{@done_at.strftime("%I:%M %p")}"
     puts "-----------------*********-----------------"
-    puts " "
+    puts "\n"
   end
 
   def update_all_breads_times(dest, diff)   # Problem Area: For some reason, unable to loop through
@@ -277,9 +283,10 @@ class Bread
         breads.push(va[1])
       end
     end
+
     breads.each do |bread|                  # This can be refactored
       val = dest.values_at(bread.start_at)
-      dest.delete(bread.start_at)
+      dest.delete(bread.start_at) # deleting values can lead to unpredictable states for these storage items
       bread.start_at -= diff
       dest[bread.start_at] = val[0]
 

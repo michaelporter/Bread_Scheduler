@@ -10,10 +10,6 @@ gem 'highline'
 require 'highline/import'
 
 class DayCollector < Hash
-
-  def initialize
-  end
-
   def delete_day(which_day)
     if self.has_key?(which_day)
       alt_name = stringify_alt(which_day)
@@ -46,8 +42,8 @@ class DayCollector < Hash
     day = incorporate_new_day(date_input, new_day, old_obj)
 
     if alt_name != nil && alt_name != false then alt_name = "#{alt_name}"
-    else alt_name = ""
     end
+
     puts "\n\n#{old_time}#{old_alt} changed to #{day}#{alt_name}."
 
     return day
@@ -74,16 +70,16 @@ class DayCollector < Hash
     bread_obj = the_bread
 
     case data
-      when :name
-        bread_obj.name = new_data
-      when :rise
-        bread_obj.rise = new_data.to_i + 20
-        bread_obj.total = bread_obj.rise + bread_obj.bake
-      when :bake
-        bread_obj.bake = new_data.to_i
-        bread_obj.total = bread_obj.rise + bread_obj.bake
-      when :loaves
-        bread_obj.loaves = new_data.to_i
+    when :name
+      bread_obj.name = new_data
+    when :rise
+      bread_obj.rise = new_data.to_i + 20
+      bread_obj.total = bread_obj.rise + bread_obj.bake
+    when :bake
+      bread_obj.bake = new_data.to_i
+      bread_obj.total = bread_obj.rise + bread_obj.bake
+    when :loaves
+      bread_obj.loaves = new_data.to_i
     end
     
     new_schedule = self[which_day].run_without_text

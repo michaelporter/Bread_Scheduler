@@ -192,22 +192,25 @@ class BreadCalc
 
   def get_bread_info(how_many, menu_type)   # Derp
     add_or = ""
+
     case menu_type
-      when /edit/i
+    when /edit/i
         add_or = " added"
     end
+    
     name = ""
     rise = 0
     bake = 0
     need_pan = false
     pan_rise = 0
     loaves = 0
+
     case how_many
-      when 0
-        name = ask("What is the name of your first#{add_or} bread?", String)   # ask() is from the Highline gem; very handy
-        how_many += 1
-      else
-        name = ask("What is the name of your next bread?", String)
+    when 0
+      name = ask("What is the name of your first#{add_or} bread?", String)   # ask() is from the Highline gem; very handy
+      how_many += 1
+    else
+      name = ask("What is the name of your next bread?", String)
     end
     sleep(0.1); puts ""
 
@@ -229,11 +232,12 @@ class BreadCalc
     p = 0
     until p == 1
       intro = case p
-        when -1
-          "H"
-        when 0
-          "And h"
-        end
+      when -1
+        "H"
+      when 0
+        "And h"
+      end
+
       loaves = ask("#{intro}ow many loaves do you expect from this recipe?", Integer); sleep(0.1); puts ""
       if loaves > @pans && pan == true                    # This should really just become conditional on
                                   # whether the bread has pans; how many recipes use
@@ -285,21 +289,24 @@ class BreadCalc
     else
       loaf = "loaves"
     end
+
     puts ""
     puts "For a total of #{@loaf_count} #{loaf}!"
   end
 
   def run
+    run_basic
+    publish
+  end
+
+  def run_basic
     reset_all_things
     find_longest
     interior_scheduling
-    publish
   end
     
   def run_without_text
-    reset_all_things
-    find_longest
-    interior_scheduling
+    run_basic
     count_loaves
   end
 
@@ -313,15 +320,17 @@ class BreadCalc
   def make_hash(which_hash, which_value)    # Gathers all related times for each bread into a hash
     @bread_list.each do |k|
       key = case which_value
-        when :rise
-          k.rise
-        when :bake
-          k.bake
-        when :total
-          k.total
-        end
+      when :rise
+        k.rise
+      when :bake
+        k.bake
+      when :total
+        k.total
+      end
+
       if which_hash.has_key?(key) then key += 1
       end
+
       which_hash[key] = k     # [value => object_id, value2 => object_2_id, etc...]
     end
   end
@@ -388,16 +397,16 @@ class BreadCalc
   def reset(collection)
     col = collection
     case col
-      when Hash
-        col.each_pair do |k, v|
-          col.delete(k)
-        end
-      when Array
-        col.each do |k|
-          col.delete(k)
-        end
-      else
-        col = nil
+    when Hash
+      col.each_pair do |k, v|
+        col.delete(k)
+      end
+    when Array
+      col.each do |k|
+        col.delete(k)
+      end
+    else
+      col = nil
     end
   end
   
