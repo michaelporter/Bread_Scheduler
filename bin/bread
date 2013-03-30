@@ -4,17 +4,21 @@ $: << File.join(File.dirname(__FILE__), "/..")
 
 require 'config/gems'
 require 'lib/bread.rb'
-
-db = SQLite3::Database.new ":memory:"
+require 'lib/database_setup.rb'
 
 class Scheduler < Thor
   desc 'new --name \'My Bread!\' --rise 120 --bake 30 --loaves 2', 'create a new bread'
   option :name; option :rise; option :bake; option :loaves
   def new
+    db = SQLite3::Database.new "breadstore.db"
+    DatabaseSetup.setup(db)
+
     puts "you created a bread with the following details:"
 
     @bread = Bread.new(options)
     @bread.describe_bread
+
+    db.execute "INSERT INTO breads (name, rise, bake, loaves, pan, pan_rise) VALUES('#{@bread.name}', #{@bread.rise}, #{@bread.bake}, #{@bread.loaves}, '#{@bread.pan}', #{@bread.pan_rise})"
   end
 
 end

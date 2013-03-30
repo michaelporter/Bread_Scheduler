@@ -1,16 +1,11 @@
 class Bread
   attr_accessor( 
     :bake, 
-    :bake_at, 
-    :done_at,
-    :int_rise, 
     :loaves, 
     :name, 
-    :need_pan, 
-    :pan_at, 
+    :pan, 
     :pan_rise, 
     :rise, 
-    :start_at, 
     :total 
    )
   
