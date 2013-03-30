@@ -3,18 +3,20 @@
 $: << File.join(File.dirname(__FILE__), "/..")
 
 require 'config/gems'
+require 'lib/bread.rb'
 
-class Bread < Thor
-  desc 'new "whole wheat" 120 30 2', 'create a new bread'
+db = SQLite3::Database.new ":memory:"
+
+class Scheduler < Thor
+  desc 'new --name \'My Bread!\' --rise 120 --bake 30 --loaves 2', 'create a new bread'
   option :name; option :rise; option :bake; option :loaves
   def new
     puts "you created a bread with the following details:"
-    puts "Name: #{options[:name]}"
-    puts "Rise Time: #{options[:rise]}"
-    puts "Bake Time: #{options[:bake]}"
-    puts "Loaves: #{options[:loaves]}"
+
+    @bread = Bread.new(options)
+    @bread.describe_bread
   end
 
 end
 
-Bread.start(ARGV)
+Scheduler.start(ARGV)

@@ -1,6 +1,4 @@
 class Bread
-  include TimeManipulation
-
   attr_accessor( 
     :bake, 
     :bake_at, 
@@ -16,21 +14,22 @@ class Bread
     :total 
    )
   
-  def initialize(name, rise_time, bake_time, loaves, pan_rise = 0, need_pan = false)
-    @bake = bake_time
-    @loaves = loaves
-    @name = name
-    @need_pan = need_pan
-    @pan_rise = pan_rise
-    @rise = rise_time
-    @total = rise_time + bake_time + 20
+  def initialize(options)
+    @bake = options[:bake].to_f || 35
+    @loaves = options[:loaves] || 2
+    @name = options[:name] || "New Bread, #{Time.now.strftime('%m:%h, %d/%m/%Y')}"
+    @pan = options[:pan] || false
+    @pan_rise = options[:pan_rise] || 0
+    @rise = options[:rise].to_f || 120 
+    @total = @rise + @bake + 20
   end
 
   def describe_bread
+    puts "-----------------*********-----------------\n\n"
     puts " #{@name}:"
     puts "    Rise: #{@rise}"
     puts "    Bake: #{@bake}"
     puts "    Loaves: #{@loaves}"
-    puts "-----------------*********-----------------\n"
+    puts "\n-----------------*********-----------------\n"
   end
 end
