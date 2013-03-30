@@ -1,4 +1,4 @@
-require 'lib/BreadCalc.rb'
+require 'lib/bread_calc.rb'
 
 describe BreadCalc do 
 	before(:each) do

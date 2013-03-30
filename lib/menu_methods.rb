@@ -1,4 +1,4 @@
-require 'lib/Menus.rb'
+require 'lib/menus.rb'
 
 module MenuMethods
   def print_menu_title(menu_name)

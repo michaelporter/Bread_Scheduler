@@ -1,9 +1,9 @@
 # Storage for Schedules and their breads;
 # This class also houses the methods that deal with editing breads and making changes to the lists;
 
-require 'lib/BreadCalc.rb'
-require 'lib/Bread.rb'
-require 'lib/TimeManipulation.rb'
+require 'lib/bread_calc.rb'
+require 'lib/bread.rb'
+require 'lib/time_manipulation.rb'
 
 require 'rubygems'   # Do I really need this?  does it not inherit?
 gem 'highline'

@@ -1,4 +1,4 @@
-require 'BasicMenu.rb'
+require 'basic_menu.rb'
 require 'menus.rb'
 
 describe BreadMenus do

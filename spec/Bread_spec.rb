@@ -1,4 +1,4 @@
-require 'lib/Bread.rb'
+require 'lib/bread.rb'
 
 describe Bread do
 	before :each do

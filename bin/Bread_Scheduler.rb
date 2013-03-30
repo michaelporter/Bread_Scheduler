@@ -2,7 +2,7 @@
 
 $: << File.join(File.dirname(__FILE__), "/..")
 
-require 'lib/BasicMenu.rb'
+require 'lib/basic_menu.rb'
 require 'rubygems'
 gem 'highline'
 require 'highline/import'

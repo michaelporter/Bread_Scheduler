@@ -1,4 +1,4 @@
-require 'lib/MenuMethods.rb'
+require 'lib/menu_methods.rb'
 
 module Menus
   class Menu

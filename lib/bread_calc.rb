@@ -1,5 +1,5 @@
-require 'lib/Bread.rb'
-require 'lib/TimeManipulation.rb'
+require 'lib/bread.rb'
+require 'lib/time_manipulation.rb'
 
 # Current Assumptions
   # 20-minute Prep Time before Rise begins

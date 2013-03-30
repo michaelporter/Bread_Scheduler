@@ -1,4 +1,4 @@
-require 'lib/BreadHash.rb'
+require 'lib/bread_hash.rb'
 
 describe DayCollector do 
 

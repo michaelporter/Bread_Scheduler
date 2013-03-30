@@ -3,9 +3,9 @@ $: << File.join(File.dirname(__FILE__), "/..")
 require 'rubygems'
 gem 'highline'
 require 'highline/import'
-require 'lib/Bread.rb'
-require 'lib/BreadHash.rb'
-require 'lib/Menus.rb'
+require 'lib/bread.rb'
+require 'lib/bread_hash.rb'
+require 'lib/menus.rb'
 
 class BreadMenus
 
