@@ -1,0 +1,20 @@
+#!/usr/bin/env ruby
+
+$: << File.join(File.dirname(__FILE__), "/..")
+
+require 'config/gems'
+
+class Bread < Thor
+  desc 'new "whole wheat" 120 30 2', 'create a new bread'
+  option :name; option :rise; option :bake; option :loaves
+  def new
+    puts "you created a bread with the following details:"
+    puts "Name: #{options[:name]}"
+    puts "Rise Time: #{options[:rise]}"
+    puts "Bake Time: #{options[:bake]}"
+    puts "Loaves: #{options[:loaves]}"
+  end
+
+end
+
+Bread.start(ARGV)
