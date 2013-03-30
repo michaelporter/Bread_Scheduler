@@ -1,5 +1,4 @@
-NOTE: Scheduling with more than 2 pans, either user-available or bread-necessitated, currently produces unexpected results.
-      There is no current timeframe for fixing this issue.
+See the 'rewrite' branch for the lastest effort;  As suggested by the name, absolutely nothing is backwards compatible.
 
 Usage:
 
