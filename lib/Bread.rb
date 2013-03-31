@@ -1,14 +1,19 @@
+require 'lib/database_aware.rb'
+
 class Bread
+  include DatabaseAware
+
   attr_accessor( 
     :bake, 
     :loaves, 
     :name, 
     :pan, 
     :pan_rise, 
-    :rise, 
-    :total 
+    :rise
    )
-  
+
+  attr_reader :total
+
   def initialize(options)
     @bake = options[:bake].to_f || 35
     @loaves = options[:loaves] || 2
