@@ -5,8 +5,9 @@ $: << File.join(File.dirname(__FILE__), "/..")
 require 'config/gems'
 require 'lib/bread.rb'
 require 'lib/database_setup.rb'
+require 'lib/scheduler/scheduler.rb'
 
-class Scheduler < Thor
+class BreadScheduler < Thor
   desc 'new --name \'My Bread!\' --rise 120 --bake 30 --loaves 2', 'create a new bread'
   option :name; option :rise; option :bake; option :loaves
   def new
@@ -21,7 +22,8 @@ class Scheduler < Thor
   option :all; option :breads, :type => :array
   def schedule
     if options[:all]
-      result_all = Bread.all
+      items = Bread.all
+      puts items.inspect
     elsif options[:breads]
       names = options[:breads].dup
       ids = options[:breads].dup
@@ -31,9 +33,18 @@ class Scheduler < Thor
 
       result_names = Bread.find(:column => 'name', :values => names)
       result_ids = Bread.find(:column => 'id', :values => ids)
-    end
-  end
 
+      items = (result_names + result_ids).uniq
+    end
+
+    puts items.inspect
+
+    scheduler = Scheduler.new(
+      :items => items
+    )
+
+    scheduler.schedule!
+  end
 end
 
-Scheduler.start(ARGV)
+BreadScheduler.start(ARGV)
