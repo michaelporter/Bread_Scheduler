@@ -16,20 +16,44 @@ module DatabaseAware
 
     base.send(:extend, ClassMethods)
     base.send(:include, InstanceMethods)
-
-    base.class_variables.inspect
-    base.instance_variables.inspect
   end
 
   module ClassMethods
-    def columns
+    def columns(with_id = false)
       columns = db.execute "PRAGMA table_info(#{self.table_name})"
-      columns.shift
-      columns.map! {|column| column[1]}.join(", ")
+      columns.shift unless with_id
+      columns.map! {|column| puts "----"; puts column.inspect; column[1]}.join(", ")
+    end
+
+    def find(options)
+      column = options[:column]
+      values = options[:values]
+
+      values = values.map {|value| "'#{value}'" }.join(", ")
+
+      wrap_results(db.execute "SELECT * from #{table_name} where #{column} IN (#{values})")
+    end
+
+    def all
+      wrap_results(db.execute "SELECT * from #{table_name}")
     end
 
     def table_name
       self.name.downcase + "s"
+    end
+
+    def wrap_results(results)
+      column_set = columns(true).split(", ")
+
+      results.map do |result|
+        hs = {}
+
+        result.each_with_index do |field, id|
+          hs[column_set[id].to_sym] = field
+        end
+
+        hs
+      end
     end
   end
 

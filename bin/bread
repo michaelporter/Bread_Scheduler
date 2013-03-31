@@ -20,14 +20,17 @@ class Scheduler < Thor
   desc 'schedule --all | --breads "My Bread!" "White Bread" | --breads 1 2 3', 'create new schedule with given breads'
   option :all; option :breads, :type => :array
   def schedule
-    if option[:all]
-      db.execute "SELECT * from breads"
-    elsif option[:breads]
-      if option[:breads].first.is_a? String
-        db.execute "SELECT * from breads where name IN (#{option[:breads]})"
-      elsif option[:breads].first.is_a? Integer
-        db.execute "SELECT * from breads where id IN (#{option[:breads]})"
-      end
+    if options[:all]
+      result_all = Bread.all
+    elsif options[:breads]
+      names = options[:breads].dup
+      ids = options[:breads].dup
+
+      names.keep_if {|name| /\A\D+\z/ =~ name }
+      ids.keep_if {|id| /\A\d+\z/ =~ id }
+
+      result_names = Bread.find(:column => 'name', :values => names)
+      result_ids = Bread.find(:column => 'id', :values => ids)
     end
   end
 
