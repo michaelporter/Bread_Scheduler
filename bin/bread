@@ -14,8 +14,16 @@ class BreadScheduler < Thor
     puts "you created a bread with the following details:"
 
     @bread = Bread.new(options)
-    @bread.describe_bread
-    @bread.save
+    if @bread.save
+      @bread.describe_bread
+    end
+  end
+
+  desc 'list', 'shows all saved breads'
+  def list
+    breads = Bread.all
+
+    Bread.describe_breads(breads)
   end
 
   desc 'schedule --all | --breads "My Bread!" "White Bread" | --breads 1 2 3', 'create new schedule with given breads'
@@ -23,27 +31,29 @@ class BreadScheduler < Thor
   def schedule
     if options[:all]
       items = Bread.all
-      puts items.inspect
     elsif options[:breads]
-      names = options[:breads].dup
-      ids = options[:breads].dup
-
-      names.keep_if {|name| /\A\D+\z/ =~ name }
-      ids.keep_if {|id| /\A\d+\z/ =~ id }
-
-      result_names = Bread.find(:column => 'name', :values => names)
-      result_ids = Bread.find(:column => 'id', :values => ids)
-
-      items = (result_names + result_ids).uniq
+      items = collect_breads_from_options(options[:breads])
     end
 
-    puts items.inspect
-
-    scheduler = Scheduler.new(
-      :items => items
-    )
-
+    scheduler = Scheduler.new(:items => items, :no_conflict => :bake)
     scheduler.schedule!
+  end
+
+  private
+
+  def collect_breads_from_options(input)
+    names = input.dup
+    ids = input.dup
+
+    names.keep_if {|name| /\A\D+\z/ =~ name }
+    ids.keep_if {|id| /\A\d+\z/ =~ id }
+
+    result_names = Bread.find(:column => 'name', :values => names)
+    result_ids = Bread.find(:column => 'id', :values => ids)
+
+    items = (result_names + result_ids).uniq
+
+    items
   end
 end
 

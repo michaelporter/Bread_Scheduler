@@ -22,7 +22,7 @@ module DatabaseAware
     def columns(with_id = false)
       columns = db.execute "PRAGMA table_info(#{self.table_name})"
       columns.shift unless with_id
-      columns.map! {|column| puts "----"; puts column.inspect; column[1]}.join(", ")
+      columns.map! {|column| column[1] }.join(", ")
     end
 
     def find(options)

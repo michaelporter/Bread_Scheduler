@@ -32,4 +32,9 @@ class Bread
     puts "    Loaves: #{@loaves}"
     puts "\n-----------------*********-----------------\n"
   end
+
+  def self.describe_breads(bread_vals)
+    bread_vals.map {|bread_val| {:name => bread_val[:name], :rise => bread_val[:rise], :bake => bread_val[:bake], :loaves => bread_val[:loaves] }}
+    Formatador.display_table(bread_vals)
+  end
 end
