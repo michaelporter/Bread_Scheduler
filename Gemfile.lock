@@ -3,6 +3,7 @@ GEM
   specs:
     awesome_print (1.1.0)
     diff-lcs (1.2.2)
+    formatador (0.2.4)
     highline (1.6.16)
     rspec (2.13.0)
       rspec-core (~> 2.13.0)
@@ -20,6 +21,7 @@ PLATFORMS
 
 DEPENDENCIES
   awesome_print
+  formatador
   highline
   rspec
   sqlite3

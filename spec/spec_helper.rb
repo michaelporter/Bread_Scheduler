@@ -1,4 +1,8 @@
-#require_relative '../bin/Bread_Scheduler.rb'
-#require_relative '../lib/BasicMenu.rb'
+require_relative '../config/gems.rb'
 
-#require 'yaml'
+require_relative '../lib/bread.rb'
+require_relative '../lib/database_aware.rb'
+require_relative '../lib/database_setup.rb'
+
+require 'yaml'
+

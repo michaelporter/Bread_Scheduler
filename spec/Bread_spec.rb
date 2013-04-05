@@ -1,8 +1,14 @@
-require 'lib/bread.rb'
+require 'spec_helper'
 
 describe Bread do
 	before :each do
-	   @bread = Bread.new("mybread", 120, 30, 2, 0, false)
+    options = {
+      :name => "Breadname",
+      :rise => 120,
+      :bake => 35,
+      :loaves => 2
+    }
+	  @bread = Bread.new(options)
 	end
 
 	it "should return a new Bread object" do
@@ -18,7 +24,13 @@ describe Bread do
   end
 
   it "should compare based on total time" do
-    @bread2 = Bread.new("secondbread", 150, 30, 2, 0, false)
+    options2 = {
+      :name => "SecondBreadname",
+      :rise => 140,
+      :bake => 55,
+      :loaves => 4
+    }
+    @bread2 = Bread.new(options2)
     (@bread <=> @bread2).should eq(-1)
   end
 end

@@ -24,6 +24,10 @@ class Bread
     @total = @rise + @bake + 20
   end
 
+  def <=>(other)
+    self.total <=> other.total
+  end
+
   def describe_bread
     puts "-----------------*********-----------------\n\n"
     puts " #{@name}:"
