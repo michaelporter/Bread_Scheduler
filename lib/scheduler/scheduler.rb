@@ -1,9 +1,19 @@
-# makes sense to have classes descend from this, so more domain-specific
-# scheduling requirements can be hashed out;
-# Keeping major scheduling methods independent is probably very important
-# Alternatively, this could become a module with just a bunch of helper methods
-# OR BOTH
+class ScheduleItem
+  attr_accessor :time, :action
+
+  def initialize(options)
+    @time = options[:time] || Time.now
+    @action = options[:action] || "No action given"
+  end
+
+  def <=>(other)
+    time <=> other.time
+  end
+end
+
 class Scheduler
+  attr_reader :start_time, :items
+
   def initialize(options)
     @items = options[:items] || []
     @no_conflict = options[:no_conflict] || nil # 1 => :bake
@@ -12,17 +22,45 @@ class Scheduler
     @padding_seconds = options[:padding_seconds] || 0
   end
 
+  def self.show(schedule)
+    schedule.sort.each do |schedule_item|
+      puts schedule_item.time.strftime("%H:%M %d %b %Y")
+      puts "  #{schedule_item.action}"
+      puts "-----------"
+    end
+  end
+
   def schedule!
     _schedule = []
+    action_time = start_time
+    action_time_for_next_item = start_time
 
-    @items.each do |item|
-      _schedule << item  
+    items.each do |item|
+      action_map = {}
+      @schedule_on.each do |action|
+        schedule_item = ScheduleItem.new(:time => action_time, :action => "do #{action} for #{item}")
+        _schedule << schedule_item
+
+        action_map[action] = action_time
+        action_time += to_seconds(item[action])
+      end
+
+      if @no_conflict
+        action_time_for_next_item = action_map[@no_conflict]
+      else
+        action_time_for_next_item = action_time[@schedule_on.first] + @padding_seconds
+      end
     end
 
+    self.class.show(_schedule)
     _schedule
   end
 
   private
+
+  def to_seconds(minutes)
+    minutes * 60
+  end
 
   def range_conflict?(range1, range2)
     range2_a = range2.to_a

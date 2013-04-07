@@ -19,10 +19,22 @@ module DatabaseAware
   end
 
   module ClassMethods
+    def all
+      wrap_results(db.execute "SELECT * from #{table_name}")
+    end
+
     def columns(with_id = false)
       columns = db.execute "PRAGMA table_info(#{self.table_name})"
       columns.shift unless with_id
       columns.map! {|column| column[1] }.join(", ")
+    end
+
+    def delete(ids)
+      if ids.is_a? Array
+        ids = ids.join(", ")
+      end
+
+      db.execute "DELETE from #{table_name} WHERE id IN (#{ids})"
     end
 
     def find(options)
@@ -32,10 +44,6 @@ module DatabaseAware
       values = values.map {|value| "'#{value}'" }.join(", ")
 
       wrap_results(db.execute "SELECT * from #{table_name} where #{column} IN (#{values})")
-    end
-
-    def all
-      wrap_results(db.execute "SELECT * from #{table_name}")
     end
 
     def table_name
@@ -49,7 +57,7 @@ module DatabaseAware
         hs = {}
 
         result.each_with_index do |field, id|
-          hs[column_set[id].to_sym] = field
+          hs[column_set[id].downcase.to_sym] = field
         end
 
         hs

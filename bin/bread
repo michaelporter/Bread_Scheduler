@@ -8,6 +8,22 @@ require 'lib/database_setup.rb'
 require 'lib/scheduler/scheduler.rb'
 
 class BreadScheduler < Thor
+  
+  desc 'delete --id 3 | --all', 'delete a given bread'
+  option :id; option :all
+  def delete
+    if options[:all]
+      confirmation = ask("Are you sure?")
+      
+      case confirmation
+      when /^y/i
+        Bread.delete(Bread.all.map {|bread| bread[:id] })
+      end
+    else
+      Bread.delete(options[:id])
+    end
+  end
+
   desc 'new --name \'My Bread!\' --rise 120 --bake 30 --loaves 2', 'create a new bread'
   option :name; option :rise; option :bake; option :loaves
   def new
@@ -29,13 +45,13 @@ class BreadScheduler < Thor
   desc 'schedule --all | --breads "My Bread!" "White Bread" | --breads 1 2 3', 'create new schedule with given breads'
   option :all; option :breads, :type => :array
   def schedule
-    if options[:all]
-      items = Bread.all
-    elsif options[:breads]
+    if options[:breads]
       items = collect_breads_from_options(options[:breads])
+    else
+      items = Bread.all
     end
 
-    scheduler = Scheduler.new(:items => items, :no_conflict => :bake)
+    scheduler = Scheduler.new(:items => items, :schedule_on => [:rise, :bake], :no_conflict => :bake)
     scheduler.schedule!
   end
 
