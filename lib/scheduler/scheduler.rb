@@ -1,23 +1,15 @@
-class ScheduleItem
-  attr_accessor :time, :action
-
-  def initialize(options)
-    @time = options[:time] || Time.now
-    @action = options[:action] || "No action given"
-  end
-
-  def <=>(other)
-    time <=> other.time
-  end
-end
+require 'lib/time_utility.rb'
+require 'lib/scheduler/schedule_item.rb'
 
 class Scheduler
+  include Utility::Time
+
   attr_reader :start_time, :items
 
   def initialize(options)
     @items = options[:items] || []
-    @no_conflict = options[:no_conflict] || nil # 1 => :bake
-    @schedule_on = options[:schedule_on] || [] # [:rise, :pan_rise, :bake] || { 1 => :rise, 2 => :pan_rise, 3 => :bake }
+    @no_conflict = options[:no_conflict] || nil
+    @schedule_on = options[:schedule_on] || [] # [:rise, :pan_rise, :bake]
     @start_time = options[:start_time] || Time.now
     @padding_seconds = options[:padding_seconds] || 0
   end
@@ -53,14 +45,11 @@ class Scheduler
     end
 
     self.class.show(_schedule)
+
     _schedule
   end
 
   private
-
-  def to_seconds(minutes)
-    minutes * 60
-  end
 
   def range_conflict?(range1, range2)
     range2_a = range2.to_a
