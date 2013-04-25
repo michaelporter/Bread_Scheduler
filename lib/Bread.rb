@@ -41,4 +41,12 @@ class Bread
     bread_vals.map {|bread_val| {:name => bread_val[:name], :rise => bread_val[:rise], :bake => bread_val[:bake], :loaves => bread_val[:loaves] }}
     Formatador.display_table(bread_vals)
   end
+
+  def self.destroy_all
+    delete(all.map {|bread| bread[:id] })
+  end
+
+  def self.destroy(bread_id)
+    delete(bread_id)
+  end
 end

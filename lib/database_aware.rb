@@ -37,15 +37,14 @@ module DatabaseAware
       db.execute "DELETE from #{table_name} WHERE id IN (#{ids})"
     end
 
-    def find(options)
-      column = options[:column]
-      values = options[:values]
-
+    def find_attribute_with_values(attribute, values)
+      column = attribute
       values = values.map {|value| "'#{value}'" }.join(", ")
 
       wrap_results(db.execute "SELECT * from #{table_name} where #{column} IN (#{values})")
     end
 
+    # needs handling for multi-word names to be underscored
     def table_name
       self.name.downcase + "s"
     end

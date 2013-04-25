@@ -17,10 +17,10 @@ class BreadScheduler < Thor
       
       case confirmation
       when /^y/i
-        Bread.delete(Bread.all.map {|bread| bread[:id] })
+        Bread.destroy_all
       end
     else
-      Bread.delete(options[:id])
+      Bread.destroy(options[:id])
     end
   end
 
@@ -64,8 +64,8 @@ class BreadScheduler < Thor
     names.keep_if {|name| /\A\D+\z/ =~ name }
     ids.keep_if {|id| /\A\d+\z/ =~ id }
 
-    result_names = Bread.find(:column => 'name', :values => names)
-    result_ids = Bread.find(:column => 'id', :values => ids)
+    result_names = Bread.find_attribute_with_values('name', names)
+    result_ids = Bread.find_attribute_with_values('id', ids)
 
     items = (result_names + result_ids).uniq
 
