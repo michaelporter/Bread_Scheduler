@@ -1,0 +1,6 @@
+require 'rubygems'
+gem 'highline'
+require 'highline/import'
+require 'formatador'
+require 'thor'
+require 'sqlite3'

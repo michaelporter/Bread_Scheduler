@@ -1,6 +1,9 @@
 source 'https://rubygems.org'
 
-gem 'highline'
 gem 'awesome_print'
+gem 'highline'
+gem 'formatador'
+gem 'sqlite3'
+gem 'thor'
 
 gem 'rspec'

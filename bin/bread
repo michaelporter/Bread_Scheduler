@@ -1,0 +1,76 @@
+#!/usr/bin/env ruby
+
+$: << File.join(File.dirname(__FILE__), "/..")
+
+require 'config/gems'
+require 'lib/bread.rb'
+require 'lib/database_setup.rb'
+require 'lib/scheduler/scheduler.rb'
+
+class BreadScheduler < Thor
+  
+  desc 'delete --id 3 | --all', 'delete a given bread'
+  option :id; option :all
+  def delete
+    if options[:all]
+      confirmation = ask("Are you sure?")
+      
+      case confirmation
+      when /^y/i
+        Bread.destroy_all
+      end
+    else
+      Bread.destroy(options[:id])
+    end
+  end
+
+  desc 'new --name \'My Bread!\' --rise 120 --bake 30 --loaves 2', 'create a new bread'
+  option :name; option :rise; option :bake; option :loaves
+  def new
+    puts "you created a bread with the following details:"
+
+    @bread = Bread.new(options)
+    if @bread.save
+      @bread.describe_bread
+    end
+  end
+
+  desc 'list', 'shows all saved breads'
+  def list
+    breads = Bread.all
+
+    Bread.describe_breads(breads)
+  end
+
+  desc 'schedule --all | --breads "My Bread!" "White Bread" | --breads 1 2 3', 'create new schedule with given breads'
+  option :all; option :breads, :type => :array
+  def schedule
+    if options[:breads]
+      items = collect_breads_from_options(options[:breads])
+    else
+      items = Bread.all
+    end
+
+    scheduler = Scheduler.new(:items => items, :schedule_on => [:rise, :bake], :no_conflict => :bake)
+    scheduler.schedule!
+  end
+
+  private
+
+  def collect_breads_from_options(input)
+    names = input.dup
+    ids = input.dup
+
+    names.keep_if {|name| /\A\D+\z/ =~ name }
+    ids.keep_if {|id| /\A\d+\z/ =~ id }
+
+    result_names = Bread.find_attribute_with_values('name', names)
+    result_ids = Bread.find_attribute_with_values('id', ids)
+
+    items = (result_names + result_ids).uniq
+
+    items
+  end
+end
+
+BreadScheduler.start(ARGV)
