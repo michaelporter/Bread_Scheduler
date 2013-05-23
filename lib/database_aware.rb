@@ -1,4 +1,4 @@
-require 'lib/database_setup.rb'
+require_relative 'database_setup.rb'
 
 module DatabaseAware
   include DatabaseSetup

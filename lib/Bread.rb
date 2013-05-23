@@ -1,4 +1,4 @@
-require 'lib/database_aware.rb'
+require_relative 'database_aware.rb'
 
 class Bread
   include DatabaseAware

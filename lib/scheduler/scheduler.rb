@@ -1,5 +1,6 @@
-require 'lib/time_utility.rb'
-require 'lib/scheduler/schedule_item.rb'
+require_relative '../time_utility.rb'
+require_relative 'schedule_item.rb'
+require_relative 'schedule_action.rb'
 
 class Scheduler
   include Utility::Time
