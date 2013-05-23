@@ -1,14 +1,15 @@
 class ScheduleAction
-  attr_accessor :time, :action, :action_item, :action_duration, :schedule_item
+  attr_accessor :time, :action_description, :action_name, :action_duration, :schedule_item
 
   def initialize(options)
     @time = options[:time] || Time.now
-    @action = options[:action] || "No action given"
-    @action_item = options[:action_item] || "No action"
+    @action_description = options[:action_description] || "No action given"
+    @action_name = options[:action_name] || "No action"
     @action_duration = options[:action_duration] || 0
+    @schedule_item = options[:schedule_item] || nil
   end
 
   def <=>(other)
-    time <=> other.time
+    self.time <=> other.time
   end
 end
