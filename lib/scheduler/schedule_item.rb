@@ -1,12 +1,14 @@
 class ScheduleItem
-  attr_accessor :time, :action
+  attr_accessor :schedule_actions
 
-  def initialize(options)
-    @time = options[:time] || Time.now
-    @action = options[:action] || "No action given"
+  def initialize(options = {})
+    @object = options[:object] || nil
+    @schedule_actions = options[:schedule_actions] || []
   end
 
-  def <=>(other)
-    time <=> other.time
+  def update_schedule_action_times(adjustment)
+    schedule_actions.each do |schedule_action|
+      schedule_action.time += adjustment
+    end
   end
 end
